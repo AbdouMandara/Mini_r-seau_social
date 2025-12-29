@@ -62,7 +62,9 @@ class PostController extends Controller
         }
 
         $post->description = $request->description;
-        $post->allow_comments = $request->get('allow_comments', $post->allow_comments);
+        if ($request->has('allow_comments')) {
+            $post->allow_comments = filter_var($request->allow_comments, FILTER_VALIDATE_BOOLEAN);
+        }
         $post->save();
 
         return response()->json([

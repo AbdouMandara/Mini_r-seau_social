@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('posts', function (Blueprint $table) {
-            $table->uuid('id_post');
+            $table->uuid('id_post')->primary();
             $table->string('img_post')->nullable();
             $table->string('description', 100);
             $table->boolean('is_delete')->default(false);
-            $table->foreignId('id_user')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('id_user')->constrained('users')->onDelete('cascade');
             $table->boolean('allow_comments')->default(true); // Added this as it's in the description.md (Section 5)
             $table->timestamps();
         });

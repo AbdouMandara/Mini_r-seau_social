@@ -33,6 +33,13 @@ const router = createRouter({
       meta: { auth: true }
     },
     {
+      path: '/profil',
+      redirect: to => {
+        const authStore = useAuthStore();
+        return authStore.user ? `/${authStore.user.nom}/profil` : '/login';
+      }
+    },
+    {
       path: '/:nom_user/add_post',
       name: 'add-post',
       component: () => import('@/views/AddPostView.vue'),

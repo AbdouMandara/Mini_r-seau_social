@@ -14,24 +14,62 @@
 
           <!-- Desktop Navigation -->
           <nav class="desktop-nav">
-            <!-- Home Link (only on profile) -->
-            <button v-if="route.name === 'profile'" class="btn-home-link" @click="goHome">
-              <span class="material-symbols-rounded">home</span>
-              Accueil
-            </button>
+            <div class="user-menu-wrapper" v-if="authStore.isAuthenticated">
+              <div class="profile-link-container" @click="toggleUserMenu" :class="{ 'active': showUserMenu }">
+                <div class="avatar-with-name">
+                  <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
+                  <span class="user-name-header">{{ authStore.user.nom }}</span>
+                  <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
+                </div>
+              </div>
 
-            <button class="btn btn-primary cta-add" @click="router.push(`/${authStore.user.nom}/add_post`)">
-              <span class="material-symbols-rounded">add</span>
-              Ajouter un post
-            </button>
-            <div class="profile-link" @click="router.push(`/${authStore.user.nom}/profil`)">
-              <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
+              <!-- User Dropdown Menu -->
+              <Transition name="fade-slide">
+                <div v-if="showUserMenu" class="user-dropdown card shadow-lg">
+                  <!-- User Header inside Dropdown -->
+                  <div class="dropdown-user-info" @click="router.push(`/${authStore.user.nom}/profil`); showUserMenu = false">
+                    <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
+                    <div class="user-details">
+                      <span class="full-name">{{ authStore.user.nom }}</span>
+                      <span class="view-profile">Voir mon profil</span>
+                    </div>
+                  </div>
+                  
+                  <div class="dropdown-divider"></div>
+
+                  <!-- Menu Options -->
+                  <div v-if="route.name !== 'home'" class="dropdown-item" @click="goHome(); showUserMenu = false">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">home</span>
+                    </div>
+                    <span>Accueil</span>
+                  </div>
+
+                  <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="router.push(`/${authStore.user.nom}/profil`); showUserMenu = false">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">person</span>
+                    </div>
+                    <span>Mon Profil</span>
+                  </div>
+
+                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="router.push(`/${authStore.user.nom}/add_post`); showUserMenu = false">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">add_circle</span>
+                    </div>
+                    <span>Ajouter un post</span>
+                  </div>
+
+                  <div class="dropdown-divider"></div>
+
+                  <div class="dropdown-item logout-item" @click="handleLogout(); showUserMenu = false">
+                    <div class="item-icon-bg logout-icon">
+                      <span class="material-symbols-rounded">logout</span>
+                    </div>
+                    <span>Déconnexion</span>
+                  </div>
+                </div>
+              </Transition>
             </div>
-            
-            <!-- Logout Button -->
-            <button class="logout-btn" @click="handleLogout" title="Déconnexion">
-              <span class="material-symbols-rounded">logout</span>
-            </button>
           </nav>
         </div>
       </div>
@@ -100,6 +138,7 @@ const router = useRouter();
 const route = useRoute();
 
 const showNotifs = ref(false);
+const showUserMenu = ref(false);
 const notifications = ref([]);
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length);
 const prevUnreadCount = ref(0);
@@ -183,6 +222,7 @@ const fetchNotifications = async () => {
 };
 
 const toggleNotifs = async () => {
+    showUserMenu.value = false; // Close user menu if opening notifs
     showNotifs.value = !showNotifs.value;
     if (showNotifs.value && unreadCount.value > 0) {
         try {
@@ -195,7 +235,22 @@ const toggleNotifs = async () => {
     }
 };
 
+const toggleUserMenu = () => {
+    showNotifs.value = false; // Close notifs if opening user menu
+    showUserMenu.value = !showUserMenu.value;
+};
+
+// Close menus when clicking outside
 onMounted(() => {
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.user-menu-wrapper') && !e.target.closest('.profile-link-container')) {
+            showUserMenu.value = false;
+        }
+        if (!e.target.closest('.notif-btn') && !e.target.closest('.notif-drawer')) {
+            showNotifs.value = false;
+        }
+    });
+
     fetchNotifications();
     // Poll notifications every minute
     setInterval(fetchNotifications, 60000);
@@ -468,6 +523,162 @@ onMounted(() => {
     font-size: 0.8rem;
     color: var(--text-muted);
     font-style: italic;
+}
+
+/* User Dropdown */
+.user-menu-wrapper {
+  position: relative;
+}
+
+.profile-link-container {
+  cursor: pointer;
+  padding: 5px 12px;
+  border-radius: 30px;
+  transition: background 0.2s;
+}
+
+.profile-link-container:hover, .profile-link-container.active {
+  background: var(--secondary-color);
+}
+
+.avatar-with-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name-header {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.dropdown-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.profile-link-container.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  padding: 10px;
+  z-index: 400;
+  border-radius: 20px;
+  border: 1px solid #f0f2f5;
+}
+
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-user-info:hover {
+  background: var(--secondary-color);
+}
+
+.dropdown-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-name {
+  font-weight: 700;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.view-profile {
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.item-icon-bg {
+  width: 36px;
+  height: 36px;
+  background: #f0f2f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.item-icon-bg span {
+  font-size: 20px;
+  color: var(--text-color);
+}
+
+.dropdown-item:hover {
+  background: var(--secondary-color);
+}
+
+.dropdown-item:hover .item-icon-bg {
+  background: white;
+}
+
+.dropdown-item:hover .item-icon-bg span {
+  color: var(--primary-color);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f0f2f5;
+  margin: 10px 0;
+}
+
+.logout-item:hover {
+  background: #fff0f0;
+  color: var(--error);
+}
+
+.logout-item:hover .item-icon-bg {
+  background: white;
+}
+
+.logout-item:hover .item-icon-bg span {
+  color: var(--error);
+}
+
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-slide-enter-from, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
 }
 
 .slide-enter-active, .slide-leave-active {

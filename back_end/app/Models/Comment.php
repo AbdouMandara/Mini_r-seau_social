@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Comment extends Model
 {
+    use HasUuids;
+
     protected $primaryKey = 'id_commentaire';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id_user',

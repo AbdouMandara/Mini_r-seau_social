@@ -33,7 +33,7 @@
 
       <button class="action-btn" :disabled="!post.allow_comments" @click="$emit('open-comments', post)">
         <span class="material-symbols-rounded icon">chat_bubble</span>
-        <span v-if="commentsCount > 0" class="count">{{ commentsCount }}</span>
+        <span class="count">{{ commentsCount }}</span>
       </button>
 
       <button class="action-btn" @click="handleShare">
@@ -124,17 +124,34 @@ const handleLike = async () => {
 };
 
 const handleShare = () => {
-    const shareUrl = `${window.location.origin}/${props.post.user.nom}/post/${props.post.id_post}`;
-    if (navigator.share) {
-        navigator.share({
-            title: '!Pozterr',
-            text: props.post.description,
-            url: shareUrl,
-        });
-    } else {
-        navigator.clipboard.writeText(shareUrl);
-        alert('Lien copié !');
-    }
+    const profileUrl = `${window.location.origin}/${props.post.user.nom}/profil/${authStore.user?.nom}`;
+    const shareUrl = `${window.location.origin}/post/${props.post.id_post}`;
+    const message = `Regarde cette publication de ${props.post.user.nom} sur !pozterr : ${shareUrl}\n\nRetrouve aussi son profil ici : ${profileUrl}`;
+    
+    Swal.fire({
+        title: 'Partager le post',
+        html: `
+            <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 10px;">
+                <button id="share-wa" class="swal2-confirm swal2-styled" style="background: #25D366; border-radius: 12px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                   <span class="material-symbols-rounded">chat</span> WhatsApp
+                </button>
+                <button id="share-copy" class="swal2-confirm swal2-styled" style="background: var(--primary-color); border-radius: 12px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                   <span class="material-symbols-rounded">content_copy</span> Copier le lien
+                </button>
+            </div>
+        `,
+        showConfirmButton: false,
+        didOpen: () => {
+            document.getElementById('share-wa').onclick = () => {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+                Swal.close();
+            };
+            document.getElementById('share-copy').onclick = () => {
+                navigator.clipboard.writeText(message);
+                Swal.fire({ title: 'Lien copié !', icon: 'success', timer: 1000, showConfirmButton: false });
+            };
+        }
+    });
 };
 
 const deletePost = async () => {

@@ -1,3 +1,4 @@
+<template>
   <div class="add-post-view">
     <!-- Back arrow for desktop -->
     <div class="desktop-back desktop-only">
@@ -56,13 +57,6 @@
         </button>
       </form>
     </div>
-
-    <!-- Confirmation Toast -->
-    <Transition name="fade">
-      <div v-if="showSuccess" class="toast success-toast">
-        {{ isEditMode ? 'Post modifié avec succès !' : 'Post créé avec succès !' }}
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -135,7 +129,6 @@ const handleSubmit = async () => {
   try {
     if (isEditMode.value) {
       // Update existing post
-      formData.append('_method', 'PUT');
       await api.post(`/posts/${postId.value}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -144,8 +137,6 @@ const handleSubmit = async () => {
       await api.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-    }
-    
     }
     
     Swal.fire({
@@ -195,6 +186,7 @@ onMounted(() => {
     color: var(--text-muted);
     font-weight: 600;
     transition: color 0.2s;
+    border : none;
 }
 
 .back-link:hover {
