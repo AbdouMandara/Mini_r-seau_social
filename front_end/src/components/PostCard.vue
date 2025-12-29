@@ -251,6 +251,7 @@ const editPost = () => {
 .post-description {
   font-size: 1rem;
   margin-bottom: 15px;
+  word-break: break-all;
 }
 
 .post-footer {

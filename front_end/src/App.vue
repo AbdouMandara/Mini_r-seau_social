@@ -58,6 +58,14 @@
                     </div>
                     <span>Ajouter un post</span>
                   </div>
+                  <!-- Feed back -->
+                  <div class="dropdown-item" @click="router.push(`/${authStore.user.nom}/feedback`); showUserMenu = false">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">info</span>
+                    </div>
+                    <span>Envoyer un feedback</span>
+                  </div>
+
 
                   <div class="dropdown-divider"></div>
 

@@ -27,6 +27,12 @@ const router = createRouter({
       meta: { auth: true }
     },
     {
+      path: '/:nom_user/feedback',
+      name: 'feedback',
+      component: () => import('@/views/FeedbackView.vue'),
+      meta: { auth: true }
+    },
+    {
       path: '/:nom_user/profil/:target_name?',
       name: 'profile',
       component: () => import('@/views/ProfileView.vue'),

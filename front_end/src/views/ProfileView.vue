@@ -491,17 +491,17 @@ watch(activeTab, (newTab) => {
 }
 
 .avatar-ring {
-  padding: 5px;
-  background: var(--primary-color);
-  border-radius: 40px;
-  width: 120px;
-  height: 120px;
+    padding: 3px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
 }
 
 .profile-avatar-large {
   width: 100%;
   height: 100%;
-  border-radius: 35px;
+  border-radius: 50%;
   object-fit: cover;
   border: 4px solid white;
 }
@@ -577,7 +577,7 @@ watch(activeTab, (newTab) => {
   transition: transform 0.2s;
 }
 
-.metric-card:hover { transform: translateY(-3px); }
+/* .metric-card:hover { transform: translateY(-3px); } */
 
 .metric-value {
   font-size: 1.2rem;
@@ -733,6 +733,7 @@ watch(activeTab, (newTab) => {
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s;
+  word-break: break-all;
 }
 
 .post-preview-card:hover { background: #e9ecef; }

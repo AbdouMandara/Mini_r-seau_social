@@ -52,6 +52,7 @@ import { ref, onMounted, watch } from 'vue';
 import api from '@/utils/api';
 import { useAuthStore } from '@/stores/auth';
 import Loader from '@/components/Loader.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps(['isOpen', 'postId']);
 const emit = defineEmits(['close', 'comment-added']);
@@ -91,14 +92,37 @@ const addComment = async () => {
   }
 };
 
-const deleteComment = async (comment) => {
-    if (confirm('Supprimer ce commentaire ?')) {
+const deleteComment = async (comment) => {  
+  const result = await Swal.fire({
+    title: 'Supprimer ce commentaire ?',
+    text: "Cette action est irréversible !",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#1877f2',
+    confirmButtonText: 'Oui, supprimer',
+    cancelButtonText: 'Annuler'
+  });
+
+  if (result.isConfirmed) {
         try {
             await api.delete(`/comments/${comment.id_commentaire}`);
+                  Swal.fire({
+                  title: 'Supprimé !',
+                  text: 'Votre commentaire a été supprimé.',
+                  icon: 'success',
+                  timer: 1500,
+                  showConfirmButton: false
+           });
             comments.value = comments.value.filter(c => c.id_commentaire !== comment.id_commentaire);
             emit('comment-added');
         } catch (err) {
             console.error(err);
+            Swal.fire({
+                title: 'Erreur',
+                text: 'Une erreur est survenue.',
+                icon: 'error'
+            });
         }
     }
 };
