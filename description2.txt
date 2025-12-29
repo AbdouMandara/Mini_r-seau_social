@@ -1,0 +1,24 @@
+Tu es un dev web senior en VueJs et Laravel 
+1 - Je veux un système de déconnexion côté front et back end en me mettant un bouton de déconnexion avec une icone appropriée pour ça, il doit avoir une question pour demander s'il veut réellement se déconnecté , tu vas le rendre déconnecté en bdd de sorte qu'il ne peut accéder à son compte que en se reconnectant sur /login où il est reconduit après sa déconnexion
+NB : installe sweetAlert pour des popup propres pour les actions comme la déconnexion la suppression de posts, l'ajout de post, la modification de post etc avec des couleurs pour chaque action
+
+2 - Quand je suis sur mobile, sur /{nom_user}/add_post quand j'ajoute une photo dans l'input de type file et elle apparaît je peux plus scroller jusqu'en bas donc le bouton d'ajout n'est pas clair à l'écran . Voilà les dimensions de l'écran (414 736)
+
+3 - Assure toi que dans le composant Post la height de l'image uploadé est identique à 1:1 prends ici les dimensions de images sur Instagram 
+
+4 - Sur grand écran je vois pas la partie notifications 
+
+5 - la partie notifications ne marche c'est-à dire c'est pas ok donc quand un user loke mon post cà n'apparait pas dans cette partie or je veux que ça apparaisse et une notif apparaît pour me dire qu'une personne a interagit avec mes posts
+
+6 -  QUand je suis sur /{nom_user}/profil , j'aimerai que sur modifier profil, un overflow et un formulaire apparaissent où il verra les champs suivants (ceux qui existent et qu'il pourra modifier) : nom, photo profil, région, description du profil [d'où tu modifieras la table users et tu ajouteras la description du profil]
+
+7 - l'option de partages de profil, quand on clique dessus une popup doit apparaître et ça doit lui permettre de partager sur whatsapp, instagram donc tu intègreras leur api et le message sera "Suis-moi sur !pozterr voilà mon compte : lien_du_site/{nom_profil}/profil/{nom_profil_de_celui_qui_a_envoyé} 
+La personne sans compte quand elle clique elle sera redirigé vers /login d'ab
+
+8 - A côté de posts où t'affiches les posts tu y insères les interactions du user donc ceux qu'il a suivi récemment , les posts liké commentés, cette option apparait uniquement sur son profil et pas chez les autres donc tu utiliseras un v-if
+
+9 - sur grand écran tu dois rajouter dans le header lorsque je suis sur /{nom_user}/profil  donc mon profil la possibilité de revenir sur /home
+
+10 - sur les posts où on peut pas commenter mets en bas de l'icone de commentaire aucun texte enlèves le chiffre 0
+
+11 - Quand je suis sur les formulaires ajout et modif sur grand écran mets une flèche qui me ramène sur l'url où j'étais avant de me rendre sur ces formulaires
