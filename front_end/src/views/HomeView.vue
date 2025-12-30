@@ -13,14 +13,14 @@
         </button>
       </div>
 
-      <div v-else class="posts-feed">
-        <PostCard 
-          v-for="post in posts" 
-          :key="post.id_post" 
-          :post="post" 
-          @refresh="fetchPosts"
-          @open-comments="openComments"
-        />
+      <div class="posts-feed">
+        <div v-for="post in posts" :key="post.id_post" :id="'post-' + post.id_post">
+          <PostCard 
+            :post="post" 
+            @refresh="fetchPosts"
+            @open-comments="openComments"
+          />
+        </div>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import api from '@/utils/api';
 import PostCard from '@/components/PostCard.vue';
@@ -45,6 +45,7 @@ import Loader from '@/components/Loader.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const posts = ref([]);
 const loading = ref(true);
 const isDesktop = ref(window.innerWidth >= 768);
@@ -61,6 +62,19 @@ const fetchPosts = async () => {
   try {
     const res = await api.get('/posts');
     posts.value = res.data;
+    
+    // Check for deep link
+    if (route.params.post_id) {
+        setTimeout(() => {
+            const el = document.getElementById('post-' + route.params.post_id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.transition = 'transform 0.5s';
+                el.style.transform = 'scale(1.02)';
+                setTimeout(() => el.style.transform = 'scale(1)', 1000);
+            }
+        }, 500);
+    }
   } catch (err) {
     console.error(err);
   } finally {

@@ -175,7 +175,8 @@ const handleRegister = async () => {
 
   try {
     const res = await authStore.register(formData);
-    router.push(`/${res.user.nom}/home`);
+    const username = (res.user.slug || res.user.nom).replace(/ /g, '_');
+    router.push(`/${username}/home`);
   } catch (err) {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors;
@@ -394,6 +395,15 @@ const handleRegister = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-auth:hover {
+    transform: none;
+    background-color: #166fe5;
 }
 
 .auth-footer {

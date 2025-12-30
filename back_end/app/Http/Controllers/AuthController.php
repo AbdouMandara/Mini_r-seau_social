@@ -29,6 +29,9 @@ class AuthController extends Controller
             'region' => $request->region,
         ]);
 
+        // Populate remember_token for security/consistency
+        $user->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->save();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -55,6 +58,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Populate remember_token for security/session persistence consistency (requested by user)
+        $user->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->save();
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -74,10 +80,20 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
-    public function getUserByNom($nom)
+    public function getUserByNom(Request $request, $nom)
     {
-        $user = User::where('nom', $nom)->firstOrFail();
-        $user->loadCount(['likes', 'comments']);
+        // Try to find by slug first, then name (decoding URL encoded spaces if needed)
+        $user = User::where('slug', $nom)->orWhere('nom', str_replace('_', ' ', $nom))->firstOrFail();
+        
+        $user->loadCount(['likes', 'comments', 'followers', 'following']);
+        
+        // Add is_following attribute if user is authenticated
+        if ($auth = $request->user('sanctum')) {
+            $user->is_following = $auth->isFollowing($user);
+        } else {
+            $user->is_following = false;
+        }
+
         return response()->json($user);
     }
 

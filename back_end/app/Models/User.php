@@ -25,6 +25,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'nom',
+        'slug',
         'photo_profil',
         'region',
         'description',
@@ -66,5 +67,37 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasMany(Comment::class, 'id_user');
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followed_id');
+    }
+
+    public function isFollowing(User $user)
+    {
+        return $this->following()->where('followed_id', $user->id)->exists();
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->slug)) {
+                $user->slug = \Illuminate\Support\Str::slug($user->nom, '_');
+            }
+        });
+
+        static::updating(function ($user) {
+            if ($user->isDirty('nom')) {
+                $user->slug = \Illuminate\Support\Str::slug($user->nom, '_');
+            }
+        });
     }
 }

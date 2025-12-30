@@ -21,7 +21,7 @@ const router = createRouter({
       meta: { guest: true }
     },
     {
-      path: '/:nom_user/home',
+      path: '/:nom_user/home/:post_id?',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
       meta: { auth: true }

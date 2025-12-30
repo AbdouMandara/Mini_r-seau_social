@@ -112,7 +112,8 @@ const handleLogin = async () => {
 
   try {
     const res = await authStore.login(form);
-    router.push(`/${res.user.nom}/home`);
+    const username = (res.user.slug || res.user.nom).replace(/ /g, '_');
+    router.push(`/${username}/home`);
   } catch (err) {
     error.value = err.response?.data?.message || 'Identifiants incorrects';
   } finally {
@@ -265,6 +266,15 @@ const handleLogin = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-auth:hover {
+    transform: none;
+    background-color: #166fe5; /* Slightly darker */
 }
 
 .auth-footer {

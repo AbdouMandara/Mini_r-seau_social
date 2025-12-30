@@ -7,9 +7,16 @@
         
         <div v-if="authStore.isAuthenticated" class="header-actions">
           <!-- Notification Bell (Mobile & Desktop) -->
-          <div class="notif-btn" @click="toggleNotifs">
+          <!-- Notification Bell (Desktop) -->
+          <div class="notif-btn desktop-only" @click="toggleNotifs">
             <span class="material-symbols-rounded">notifications</span>
             <span v-if="unreadCount > 0" class="notif-badge"></span>
+          </div>
+
+          <!-- Mobile Hamburger -->
+          <div class="notif-btn mobile-only" @click="toggleMobileMenu">
+             <span class="material-symbols-rounded">menu</span>
+             <span v-if="unreadCount > 0" class="notif-badge"></span>
           </div>
 
           <!-- Desktop Navigation -->
@@ -27,7 +34,7 @@
               <Transition name="fade-slide">
                 <div v-if="showUserMenu" class="user-dropdown card shadow-lg">
                   <!-- User Header inside Dropdown -->
-                  <div class="dropdown-user-info" @click="router.push(`/${authStore.user.nom}/profil`); showUserMenu = false">
+                  <div class="dropdown-user-info" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
                     <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
                     <div class="user-details">
                       <span class="full-name">{{ authStore.user.nom }}</span>
@@ -45,21 +52,21 @@
                     <span>Accueil</span>
                   </div>
 
-                  <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="router.push(`/${authStore.user.nom}/profil`); showUserMenu = false">
+                  <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">person</span>
                     </div>
                     <span>Mon Profil</span>
                   </div>
 
-                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="router.push(`/${authStore.user.nom}/add_post`); showUserMenu = false">
+                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/add_post`); showUserMenu = false">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">add_circle</span>
                     </div>
                     <span>Ajouter un post</span>
                   </div>
                   <!-- Feed back -->
-                  <div class="dropdown-item" @click="router.push(`/${authStore.user.nom}/feedback`); showUserMenu = false">
+                  <div class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/feedback`); showUserMenu = false">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">info</span>
                     </div>
@@ -99,12 +106,42 @@
           <div v-for="n in notifications" :key="n.id_notif" class="notif-item" :class="{ 'unread': !n.is_read }">
              <img :src="n.author.photo_profil ? `${BASE_URL}/storage/${n.author.photo_profil}` : 'https://ui-avatars.com/api/?name=' + n.author.nom" class="notif-avatar" />
              <div class="notif-content">
-               <p><strong>{{ n.author.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
-               <span class="post-preview">"{{ n.post.description.substring(0, 30) }}..."</span>
+               <p v-if="n.type === 'follow'"><strong>{{ n.author.nom }}</strong> a commencé à vous suivre</p>
+               <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author.nom }}</strong> vous a suivi en retour</p>
+               <p v-else><strong>{{ n.author.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
+               <span v-if="n.post" class="post-preview">"{{ n.post.description.substring(0, 30) }}..."</span>
              </div>
           </div>
         </div>
       </div>
+    </Transition>
+
+    <!-- Mobile Menu Drawer -->
+    <Transition name="slide">
+        <div v-if="showMobileMenu" class="notif-drawer card mobile-menu-content">
+            <div class="drawer-header">
+                <h3>Menu</h3>
+                <button class="close-btn" @click="showMobileMenu = false">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div class="drawer-body">
+                <div class="menu-item-mobile" @click="openNotifsFromMobile">
+                    <div class="label-with-icon">
+                        <span class="material-symbols-rounded">notifications</span>
+                        Notifications
+                    </div>
+                    <span v-if="unreadCount > 0" class="badge-count">{{ unreadCount }}</span>
+                </div>
+                
+                <div class="menu-item-mobile" @click="navigateToFeedback">
+                    <div class="label-with-icon">
+                        <span class="material-symbols-rounded">rate_review</span>
+                        Donner un avis
+                    </div>
+                </div>
+            </div>
+        </div>
     </Transition>
 
     <!-- Main Content -->
@@ -115,15 +152,15 @@
     <!-- Footer Mobile -->
     <nav v-if="authStore.isAuthenticated" class="mobile-footer">
       <div class="footer-grid">
-        <router-link :to="`/${authStore.user.nom}/home`" class="footer-item">
+        <router-link :to="`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/home`" class="footer-item">
           <span class="material-symbols-rounded">home</span>
         </router-link>
-        <router-link :to="`/${authStore.user.nom}/add_post`" class="footer-item">
+        <router-link :to="`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/add_post`" class="footer-item">
           <div class="plus-btn">
             <span class="material-symbols-rounded">add</span>
           </div>
         </router-link>
-        <router-link :to="`/${authStore.user.nom}/profil`" class="footer-item">
+        <router-link :to="`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`" class="footer-item">
           <div class="mini-avatar-container">
             <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
           </div>
@@ -134,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter, useRoute } from 'vue-router';
 import api, { BASE_URL } from '@/utils/api';
@@ -159,13 +196,26 @@ const profileImageUrl = computed(() => {
   return 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
 });
 
+const showMobileMenu = ref(false);
+
 const handleImgError = (e) => {
   e.target.src = 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
 };
 
+// Watch for user changes to refresh notifications immediately
+watch(() => authStore.user, (val) => {
+    if (val) {
+        fetchNotifications();
+    } else {
+        notifications.value = [];
+        unreadCount.value = 0; // Reset count
+    }
+});
+
 const goHome = () => {
   if (authStore.isAuthenticated) {
-    router.push(`/${authStore.user.nom}/home`);
+    const username = (authStore.user.slug || authStore.user.nom).replace(/ /g, '_');
+    router.push(`/${username}/home`);
   } else {
     router.push('/login');
   }
@@ -212,7 +262,9 @@ const fetchNotifications = async () => {
                     toast: true,
                     position: 'top-end',
                     icon: 'info',
-                    title: `${latest.author.nom} a interagi avec votre post`,
+                    title: latest.type === 'follow' ? `${latest.author.nom} a commencé à vous suivre` : 
+                           latest.type === 'follow_back' ? `${latest.author.nom} vous a suivi en retour` :
+                           `${latest.author.nom} a interagi avec votre post`,
                     showConfirmButton: false,
                     timer: 3000,
                     timerProgressBar: true,
@@ -249,14 +301,33 @@ const toggleUserMenu = () => {
 };
 
 // Close menus when clicking outside
+const toggleMobileMenu = () => {
+    showNotifs.value = false;
+    showMobileMenu.value = !showMobileMenu.value;
+};
+
+const openNotifsFromMobile = () => {
+    showMobileMenu.value = false;
+    showNotifs.value = true;
+};
+
+const navigateToFeedback = () => {
+    showMobileMenu.value = false;
+    const username = (authStore.user.slug || authStore.user.nom).replace(/ /g, '_');
+    router.push(`/${username}/feedback`);
+};
+
+// Close menus when clicking outside
 onMounted(() => {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.user-menu-wrapper') && !e.target.closest('.profile-link-container')) {
             showUserMenu.value = false;
         }
         if (!e.target.closest('.notif-btn') && !e.target.closest('.notif-drawer')) {
-            showNotifs.value = false;
+            // Only close if not clicking hamburger. Hamburger toggles mobile menu.
+            if (!showMobileMenu.value) showNotifs.value = false;
         }
+         // Be careful with overlapping clicks
     });
 
     fetchNotifications();
@@ -417,8 +488,16 @@ onMounted(() => {
     display: none !important;
   }
   .mobile-only {
-    display: none;
+    display: none !important;
   }
+  .desktop-only {
+    display: flex !important; /* Ensure flex if appropriate */
+  }
+}
+@media (max-width: 767px) {
+    .desktop-only {
+        display: none !important;
+    }
 }
 
 .footer-grid {
@@ -696,5 +775,33 @@ onMounted(() => {
 .slide-enter-from, .slide-leave-to {
   transform: translateY(-20px);
   opacity: 0;
+}
+
+.menu-item-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #f0f2f5;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.menu-item-mobile:hover {
+    background: #f8f9fa;
+}
+
+.label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge-count {
+    background: var(--error);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
 }
 </style>

@@ -21,7 +21,7 @@
                 <span class="material-symbols-rounded">check_circle</span>
               </span>
             </div>
-            <p class="handle">@{{ user.nom.toLowerCase().replace(/\s+/g, '_') }}</p>
+<p class="handle">@{{ (user.slug || user.nom).toLowerCase().replace(/ /g, '_') }}</p>
             
             <div class="profile-actions">
               <template v-if="isMyProfile">
@@ -34,7 +34,14 @@
                 </button>
               </template>
               <template v-else>
-                <button class="btn btn-primary-modern">Suivre</button>
+                <button 
+                  class="btn" 
+                  :class="isFollowing ? 'btn-secondary-modern' : 'btn-primary-modern'"
+                  @click="toggleFollow"
+                  :disabled="followLoading"
+                >
+                  {{ isFollowing ? 'Suivi' : 'Suivre' }}
+                </button>
                 <button class="btn btn-icon-modern" @click="handleShareProfile">
                   <span class="material-symbols-rounded">share</span>
                 </button>
@@ -49,11 +56,11 @@
             <span class="metric-label">Posts</span>
           </div>
           <div class="metric-card">
-            <span class="metric-value">0</span>
+            <span class="metric-value">{{ user.followers_count || 0 }}</span>
             <span class="metric-label">Abonnés</span>
           </div>
           <div class="metric-card">
-            <span class="metric-value">0</span>
+            <span class="metric-value">{{ user.following_count || 0 }}</span>
             <span class="metric-label">Abonnements</span>
           </div>
         </div>
@@ -250,6 +257,9 @@ const activeTab = ref('posts');
 const interactions = ref([]);
 const interactionsLoading = ref(false);
 
+const isFollowing = ref(false);
+const followLoading = ref(false);
+
 const isEditModalOpen = ref(false);
 const editLoading = ref(false);
 const editPreviewUrl = ref(null);
@@ -295,6 +305,7 @@ const fetchUserPosts = async () => {
 
         const userRes = await api.get(`/users/profile/${username}`);
         user.value = userRes.data;
+        isFollowing.value = user.value.is_following;
 
         const postsRes = await api.get(`/users/${user.value.id}/posts`);
         posts.value = postsRes.data;
@@ -306,6 +317,29 @@ const fetchUserPosts = async () => {
         }
     } finally {
         loading.value = false;
+    }
+};
+
+const toggleFollow = async () => {
+    if (followLoading.value) return;
+    followLoading.value = true;
+    try {
+        if (isFollowing.value) {
+            const res = await api.delete(`/users/${user.value.id}/unfollow`);
+            user.value.followers_count = res.data.follower_count;
+            user.value.following_count = res.data.following_count;
+            isFollowing.value = false;
+        } else {
+            const res = await api.post(`/users/${user.value.id}/follow`);
+            user.value.followers_count = res.data.follower_count;
+            user.value.following_count = res.data.following_count;
+            isFollowing.value = true;
+        }
+    } catch (err) {
+        console.error('Follow error', err);
+        Swal.fire('Erreur', 'Impossible de modifier le statut de suivi', 'error');
+    } finally {
+        followLoading.value = false;
     }
 };
 
@@ -372,7 +406,7 @@ const handleEditProfile = async () => {
 
         // Update URL if name changed
         if (editForm.nom !== oldNom) {
-            router.push(`/${editForm.nom}/profil`);
+            router.push(`/${editForm.nom.replace(/ /g, '_')}/profil`);
         }
     } catch (err) {
         console.error(err);
@@ -383,7 +417,8 @@ const handleEditProfile = async () => {
 };
 
 const handleShareProfile = () => {
-    const profileUrl = `${window.location.host}/${user.value.nom}/profil`;
+    const username = (user.value.slug || user.value.nom).replace(/ /g, '_');
+    const profileUrl = `${window.location.host}/${username}/profil`;
     const message = `Voir mon profil sur !Pozterr : ${profileUrl}`;
     
     Swal.fire({
@@ -428,8 +463,7 @@ const truncate = (str, n) => {
 };
 
 const goToPost = (post) => {
-    router.push(`/${authStore.user.nom}/home`);
-    // Ideally link to specific post but currently home is the main feed
+    router.push(`/${authStore.user.nom}/home/${post.id_post}`);
 };
 
 onMounted(async () => {
@@ -893,27 +927,7 @@ watch(activeTab, (newTab) => {
 }
 
 /* Share Modal Custom */
-.share-options-modern {
-    display: grid;
-    gap: 12px;
-    padding: 15px 0;
-}
 
-.btn-share {
-    border: none;
-    padding: 15px;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    color: white;
-}
-
-.btn-share.wa { background: #25D366; }
-.btn-share.copy { background: var(--primary-color); }
 
 @media (min-width: 768px) {
   .profile-container {
@@ -930,5 +944,42 @@ watch(activeTab, (newTab) => {
   }
   .profile-metrics { gap: 10px; }
   .metric-card { padding: 10px; }
+}
+</style>
+
+<style>
+/* Global styles for SweetAlert content */
+.share-options-modern {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-share {
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-share:hover { transform: translateY(-3px); }
+
+.btn-share.wa { 
+    background: #25D366; 
+    color: white; 
+    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+}
+
+.btn-share.copy { 
+    background: #f0f2f5; 
+    color: #1c1e21; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 </style>
