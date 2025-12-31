@@ -5,7 +5,7 @@
       <img :src="userAvatar" class="post-avatar" @error="handleAvatarError" />
       <div class="user-info">
         <h3 class="author-name" @click="goToProfile">{{ post.user.nom }}</h3>
-        <p class="joined-date">a rejoint le {{ formatDate(post.user.created_at) }}</p>
+        <p class="joined-date">Publié le {{ formatDate(post.created_at) }}</p>
       </div>
       <div v-if="shouldShowActions" class="post-actions">
         <span class="material-symbols-rounded menu-dots" @click="showMenu = !showMenu">more_horiz</span>
@@ -100,7 +100,9 @@ const formatDate = (dateStr) => {
   return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
 };
 

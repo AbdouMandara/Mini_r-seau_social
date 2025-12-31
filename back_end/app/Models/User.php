@@ -30,6 +30,9 @@ class User extends Authenticatable
         'region',
         'description',
         'password',
+        'is_admin',
+        'is_blocked',
+        'last_seen_at',
     ];
 
     /**
@@ -51,6 +54,9 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'is_blocked' => 'boolean',
+            'last_seen_at' => 'datetime',
         ];
     }
 

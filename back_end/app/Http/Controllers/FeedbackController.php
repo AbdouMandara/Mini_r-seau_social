@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\FeedbackMail;
 
 class FeedbackController extends Controller
 {
@@ -15,20 +13,11 @@ class FeedbackController extends Controller
             'comment' => 'required|string|max:255',
         ]);
 
-        $user = $request->user();
-
-        $data = [
-            'name' => $user->nom,
+        \App\Models\Feedback::create([
+            'user_id' => $request->user()->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-        ];
-
-        // Send Email using allow synchronous send for immediate feedback
-        try {
-            Mail::to('abdoumandara@gmail.com')->send(new FeedbackMail($data));
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Erreur lors de l\'envoi du mail: ' . $e->getMessage()], 500); 
-        }
+        ]);
 
         return response()->json(['message' => 'Votre feedback a été reçu, merci !']);
     }

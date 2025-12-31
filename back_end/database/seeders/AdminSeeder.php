@@ -1,0 +1,27 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+
+class AdminSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $nom = env('ADMIN_NOM');
+        $password = env('ADMIN_PASSWORD');
+
+        User::create([
+            'nom' => $nom,
+            'password' => Hash::make($password),
+            'is_admin' => true,
+            'region' => 'Centre', // Valeur par défaut requise
+            'photo_profil' => 'https://ui-avatars.com/api/?name=' . urlencode($nom),
+        ]);
+    }
+}

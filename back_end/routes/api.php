@@ -7,6 +7,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,19 +23,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'profile']);
     Route::get('/users/profile/{nom}', [AuthController::class, 'getUserByNom']);
     Route::post('/user/update', [AuthController::class, 'updateProfile']);
-
-    Route::post('/posts', [PostController::class, 'store']);
-    Route::post('/posts/{post}', [PostController::class, 'update']); // Use POST for multipart/form-data updates
-    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+    
     Route::get('/my-posts', [PostController::class, 'userPosts']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/user/interactions', [\App\Http\Controllers\InteractionController::class, 'index']);
+    
+    // Admin Routes
+    Route::middleware('isAdmin')->prefix('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'getDashboardStats']);
+        Route::get('/users', [AdminController::class, 'getUsers']);
+        Route::get('/feedbacks', [AdminController::class, 'getFeedbacks']);
+        Route::post('/users/{user}/toggle-block', [AdminController::class, 'toggleBlock']);
+    });
+});
+
+// Interactive routes requiring checkBlocked
+Route::middleware(['auth:sanctum', 'checkBlocked'])->group(function () {
+    Route::post('/posts', [PostController::class, 'store']);
+    Route::post('/posts/{post}', [PostController::class, 'update']); 
+    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
     Route::post('/posts/{post}/like', [LikeController::class, 'toggle']);
     Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
-
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/read', [NotificationController::class, 'markAsRead']);
-    Route::get('/user/interactions', [\App\Http\Controllers\InteractionController::class, 'index']);
     
     // Follows
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);

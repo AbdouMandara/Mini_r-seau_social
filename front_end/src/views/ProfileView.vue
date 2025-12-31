@@ -685,7 +685,6 @@ watch(activeTab, (newTab) => {
 .nav-tab.active {
   background: var(--primary-color);
   color: white;
-  box-shadow: 0 8px 20px rgba(24, 119, 242, 0.2);
 }
 
 /* Section Transitions */

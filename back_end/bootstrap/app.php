@@ -12,7 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'isAdmin' => \App\Http\Middleware\IsAdmin::class,
+            'checkBlocked' => \App\Http\Middleware\CheckBlocked::class,
+            'trackLastSeen' => \App\Http\Middleware\TrackLastSeen::class,
+        ]);
+        
+        $middleware->append(\App\Http\Middleware\TrackLastSeen::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
