@@ -55,11 +55,11 @@
             <span class="metric-value">{{ posts.length }}</span>
             <span class="metric-label">Posts</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card clickable" @click="openUserList('followers')">
             <span class="metric-value">{{ user.followers_count || 0 }}</span>
             <span class="metric-label">Abonnés</span>
           </div>
-          <div class="metric-card">
+          <div class="metric-card clickable" @click="openUserList('following')">
             <span class="metric-value">{{ user.following_count || 0 }}</span>
             <span class="metric-label">Abonnements</span>
           </div>
@@ -82,12 +82,13 @@
       </div>
 
       <!-- Feed Tabs Navigation -->
+      <!-- Feed Tabs Navigation -->
       <div class="feed-navigation">
-        <button class="nav-tab" :class="{ active: activeTab === 'posts' }" @click="activeTab = 'posts'">
+        <button class="nav-tab" :class="{ active: activeTab === 'posts' }" @click="activeTab = 'posts'" :style="!isMyProfile ? 'flex: 0 0 auto; width: 100%;' : ''">
           <span class="material-symbols-rounded">grid_view</span>
           Publications
         </button>
-        <button class="nav-tab" :class="{ active: activeTab === 'interactions' }" @click="activeTab = 'interactions'">
+        <button v-if="isMyProfile" class="nav-tab" :class="{ active: activeTab === 'interactions' }" @click="activeTab = 'interactions'">
           <span class="material-symbols-rounded">bolt</span>
           Interactions
         </button>
@@ -100,8 +101,12 @@
           <div v-if="activeTab === 'posts'" key="posts" class="posts-section">
             <div v-if="posts.length === 0" class="empty-state-modern">
               <div class="empty-art">📸</div>
-              <h3>Pas encore de posts</h3>
-              <p>Commencez à partager vos moments avec la communauté.</p>
+              <h3 v-if="isMyProfile">Pas encore de posts</h3>
+              <h3 v-else>Aucune publication</h3>
+              
+              <p v-if="isMyProfile">Commencez à partager vos moments avec la communauté.</p>
+              <p v-else>Ce utilisateur n'a encore rien partagé.</p>
+              
               <button v-if="isMyProfile" class="btn btn-primary" @click="router.push(`/${authStore.user.nom}/add_post`)">Créer mon premier post</button>
             </div>
             <div v-else class="feed-grid">
@@ -159,6 +164,50 @@
       @close="isDrawerOpen = false"
       @comment-added="fetchUserPosts"
     />
+
+    <!-- User List Modal (Followers/Following) -->
+    <Transition name="modal-fade">
+      <div v-if="showUserListModal" class="modal-overlay-new" @click.self="closeUserList">
+        <div class="modal-card-modern user-list-modal">
+          <div class="modal-header-modern">
+            <h3>{{ userListType === 'followers' ? 'Abonnés' : 'Abonnements' }}</h3>
+            <button class="close-btn-modern" @click="closeUserList">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+          
+          <div class="user-list-content">
+             <div v-if="userListLoading" class="mini-loader">
+                <Loader />
+             </div>
+             <div v-else-if="userList.length === 0" class="empty-list">
+                <span style="font-size: 3rem; margin-bottom: 10px;">👥</span>
+                <p>Aucun utilisateur trouvé.</p>
+             </div>
+             <div v-else class="user-list-items">
+                <div v-for="u in userList" :key="u.id" class="user-list-item">
+                   <div class="user-info-group" @click="navigateToUser(u)">
+                      <img :src="u.photo_profil ? (u.photo_profil.startsWith('http') ? u.photo_profil : `${BASE_URL}/storage/${u.photo_profil}`) : 'https://ui-avatars.com/api/?name=' + u.nom" class="user-list-avatar" />
+                      <div class="user-text-content">
+                        <span class="user-list-name">{{ u.nom }}</span>
+                        <span class="user-list-handle">@{{ (u.slug || u.nom).toLowerCase().replace(/ /g, '_') }}</span>
+                      </div>
+                   </div>
+                   
+                   <button 
+                      v-if="u.id !== authStore.user.id"
+                      class="btn-follow-action" 
+                      :class="u.is_following ? 'following' : 'start-follow'"
+                      @click.stop="toggleFollowUserInList(u)"
+                   >
+                      {{ u.is_following ? 'Suivi' : 'Suivre' }}
+                   </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Edit Profile Modal (Modernized) -->
     <Transition name="modal-fade">
@@ -270,6 +319,74 @@ const editForm = reactive({
     photo: null
 });
 
+// User List Modal State
+const showUserListModal = ref(false);
+const userListType = ref('followers'); // 'followers' or 'following'
+const userList = ref([]);
+const userListLoading = ref(false);
+
+const openUserList = async (type) => {
+    userListType.value = type;
+    showUserListModal.value = true;
+    userListLoading.value = true;
+    userList.value = [];
+    
+    try {
+        const endpoint = type === 'followers' ? `/users/${user.value.id}/followers` : `/users/${user.value.id}/following`;
+        const res = await api.get(endpoint);
+        userList.value = res.data;
+    } catch (err) {
+        console.error('Fetch user list error', err);
+        Swal.fire('Erreur', 'Impossible de charger la liste', 'error');
+    } finally {
+        userListLoading.value = false;
+    }
+};
+
+const closeUserList = () => {
+    showUserListModal.value = false;
+};
+
+const navigateToUser = (u) => {
+    closeUserList();
+    const currentSlug = (authStore.user.slug || authStore.user.nom).replace(/ /g, '_');
+    const targetSlug = (u.slug || u.nom).replace(/ /g, '_');
+    router.push(`/${currentSlug}/profil/${targetSlug}`);
+};
+
+const toggleFollowUserInList = async (u) => {
+    // Optimistic UI update
+    const originalState = u.is_following;
+    u.is_following = !originalState;
+    
+    try {
+        if (originalState) {
+            // Unfollow
+            await api.delete(`/users/${u.id}/unfollow`);
+            // If viewing my own 'following' list, I might want to remove them from the list?
+            // User requested "voir mon nombre d'abonnements et le bouton suivi". 
+            // Usually we don't remove immediately to avoid UI jumping, unless requested.
+            // But we should update the counters on the profile page if it's my profile.
+        } else {
+            // Follow
+            await api.post(`/users/${u.id}/follow`);
+        }
+        
+        // Update main profile counts if it affects them
+        // If I am following/unfollowing someone, my "following_count" changes if I'm on my own profile.
+        if (isMyProfile.value) {
+            // Refresh profile counts
+             const res = await api.get(`/users/profile/${user.value.nom}`);
+             user.value.following_count = res.data.following_count;
+             user.value.followers_count = res.data.followers_count; // In case of follow back
+        }
+
+    } catch (err) {
+        console.error('Toggle follow error', err);
+        u.is_following = originalState; // Revert on error
+    }
+};
+
 const isMyProfile = computed(() => {
   if (!route.params.target_name) return true;
   return authStore.user?.nom === route.params.target_name;
@@ -320,7 +437,7 @@ const fetchUserPosts = async () => {
     }
 };
 
-const toggleFollow = async () => {
+const toggleFollow = async (event) => {
     if (followLoading.value) return;
     followLoading.value = true;
     try {
@@ -330,6 +447,9 @@ const toggleFollow = async () => {
             user.value.following_count = res.data.following_count;
             isFollowing.value = false;
         } else {
+            // Optimistic animation start
+            triggerStarRain(event.target);
+            
             const res = await api.post(`/users/${user.value.id}/follow`);
             user.value.followers_count = res.data.follower_count;
             user.value.following_count = res.data.following_count;
@@ -340,6 +460,37 @@ const toggleFollow = async () => {
         Swal.fire('Erreur', 'Impossible de modifier le statut de suivi', 'error');
     } finally {
         followLoading.value = false;
+    }
+};
+
+const triggerStarRain = (element) => {
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 20; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star-particle');
+        star.innerHTML = '⭐';
+        document.body.appendChild(star);
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = 2 + Math.random() * 3;
+        const tx = Math.cos(angle) * (50 + Math.random() * 50);
+        const ty = Math.sin(angle) * (50 + Math.random() * 50);
+
+        star.style.left = `${centerX}px`;
+        star.style.top = `${centerY}px`;
+        star.style.setProperty('--tx', `${tx}px`);
+        star.style.setProperty('--ty', `${ty}px`);
+
+        // Random animation duration
+        star.style.animation = `star-explosion 1s ease-out forwards`;
+        
+        // Remove after animation
+        setTimeout(() => {
+            star.remove();
+        }, 1000);
     }
 };
 
@@ -800,13 +951,186 @@ watch(activeTab, (newTab) => {
   padding: 20px;
 }
 
+/* Star Rain Animation */
+:global(.star-particle) {
+    position: fixed;
+    font-size: 1.2rem;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+@keyframes star-explosion {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(1.5);
+    }
+}
+
 .modal-card-modern {
   background: white;
   width: 100%;
   max-width: 500px;
-  border-radius: 30px;
-  padding: 30px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+/* User List Modal Redesign */
+.user-list-modal {
+    width: 100%;
+    max-width: 500px; /* Slightly wider */
+    height: 70vh;    /* Fixed height for better scrolling */
+    max-height: 700px;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 24px; /* More rounded */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden; /* For header blur containment */
+}
+
+.modal-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  margin-bottom: 0; /* Override previous margin */
+}
+
+.modal-header-modern h3 { 
+  font-weight: 800; 
+  font-size: 1.25rem; 
+  margin: 0;
+}
+
+.user-list-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    /* Smooth scrolling */
+    scrollbar-width: thin;
+    scrollbar-color: #e4e6eb transparent;
+}
+
+.user-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px; /* More breathing room */
+    border-bottom: 1px solid #f0f2f5;
+    transition: background 0.2s ease;
+}
+
+.user-list-item:hover {
+    background: #fafafa; /* Subtle background change only */
+}
+
+.user-info-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0; /* For truncation */
+}
+
+.user-list-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.user-text-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0; /* For text text-overflow */
+}
+
+.user-list-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-list-handle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.btn-follow-action {
+    padding: 8px 20px;
+    border-radius: 9999px; /* Pill shape */
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-follow-action.start-follow {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-follow-action.start-follow:hover {
+    filter: brightness(1.1);
+}
+
+.btn-follow-action.following {
+    background: #e4e6eb;
+    color: #050505;
+}
+
+.btn-follow-action.following:hover {
+    background: #d8dadf;
+}
+
+.empty-list {
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header-modern {

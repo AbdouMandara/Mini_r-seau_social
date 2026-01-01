@@ -56,4 +56,28 @@ class FollowController extends Controller
             'following_count' => $user->following()->count(),
         ]);
     }
+
+    public function followers(Request $request, User $user)
+    {
+        $currentUser = $request->user('sanctum');
+        
+        $followers = $user->followers()->get()->map(function ($follower) use ($currentUser) {
+            $follower->is_following = $currentUser ? $currentUser->isFollowing($follower) : false;
+            return $follower;
+        });
+
+        return response()->json($followers);
+    }
+
+    public function following(Request $request, User $user)
+    {
+        $currentUser = $request->user('sanctum');
+
+        $following = $user->following()->get()->map(function ($followedUser) use ($currentUser) {
+            $followedUser->is_following = $currentUser ? $currentUser->isFollowing($followedUser) : false;
+            return $followedUser;
+        });
+
+        return response()->json($following);
+    }
 }

@@ -52,6 +52,8 @@ Route::middleware(['auth:sanctum', 'checkBlocked'])->group(function () {
     // Follows
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     Route::delete('/users/{user}/unfollow', [FollowController::class, 'destroy']);
+    Route::get('/users/{user}/followers', [FollowController::class, 'followers']);
+    Route::get('/users/{user}/following', [FollowController::class, 'following']);
     
     // Feedback
     Route::post('/feedback', [FeedbackController::class, 'store']);
