@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'profile']);
     Route::get('/users/profile/{nom}', [AuthController::class, 'getUserByNom']);
     Route::post('/user/update', [AuthController::class, 'updateProfile']);
+    Route::get('/users/search', [AuthController::class, 'searchUsers']);
     
     Route::get('/my-posts', [PostController::class, 'userPosts']);
     Route::get('/notifications', [NotificationController::class, 'index']);

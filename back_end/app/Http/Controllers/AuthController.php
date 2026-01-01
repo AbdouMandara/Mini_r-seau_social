@@ -128,4 +128,29 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
+    public function searchUsers(Request $request)
+    {
+        $query = $request->input('query');
+
+        if (!$query) {
+            return response()->json([]);
+        }
+
+        $users = User::where('nom', 'LIKE', "%{$query}%")
+                    ->where('is_admin', false)
+                    ->select('id', 'nom', 'photo_profil', 'slug')
+                    ->limit(10)
+                    ->get();
+        
+        // Append full URL for photo_profil if needed
+        foreach ($users as $user) {
+             if ($user->photo_profil && !str_starts_with($user->photo_profil, 'http')) {
+                // We don't need to append full url here if frontend handles it, 
+                // but let's keep it consistent or just return path. 
+                // Front end App.vue handles /storage/ prefix.
+             }
+        }
+
+        return response()->json($users);
+    }
 }

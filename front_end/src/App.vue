@@ -7,8 +7,50 @@
         
         <div v-if="authStore.isAuthenticated" class="header-actions">
           <!-- Notification Bell (Mobile & Desktop) -->
+          <!-- Search Bar (Desktop) -->
+          <div class="search-container desktop-only">
+             <div class="search-input-wrapper">
+                <span class="material-symbols-rounded search-icon">search</span>
+                <input 
+                  type="text" 
+                  v-model="searchQuery" 
+                  @input="handleSearch" 
+                  @focus="showSearchOverlay = true"
+                  class="search-input" 
+                  placeholder="Rechercher un utilisateur..." 
+                />
+                <!-- Clear Button -->
+                <span v-if="searchQuery.length > 1" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
+             </div>
+
+             <!-- Search Overlay -->
+             <Transition name="fade">
+                <div v-if="showSearchOverlay && (searchQuery.trim() !== '' || searching)" class="search-results-overlay card shadow-lg">
+                   <!-- Loader in Overlay -->
+                   <div v-if="searching" class="loader-container">
+                       <Loader />
+                   </div>
+                   <!-- Results -->
+                   <div v-else-if="searchResults.length === 0" class="no-results">
+                      Aucun utilisateur trouvé
+                   </div>
+                   <div v-else class="results-list">
+                      <div 
+                        v-for="user in searchResults" 
+                        :key="user.id" 
+                        class="search-result-item" 
+                        @click="navigateToUserProfile(user)"
+                      >
+                         <img :src="user.photo_profil ? (user.photo_profil.startsWith('http') ? user.photo_profil : `${BASE_URL}/storage/${user.photo_profil}`) : 'https://ui-avatars.com/api/?name=' + user.nom" class="search-avatar" />
+                         <span class="search-username">{{ user.nom }}</span>
+                      </div>
+                   </div>
+                </div>
+             </Transition>
+          </div>
+
           <!-- Notification Bell (Desktop) -->
-          <div class="notif-btn desktop-only" @click="toggleNotifs" v-if="!route.path.startsWith('/admin')">
+          <div class="notif-btn desktop-only" @click="toggleNotifs">
             <span class="material-symbols-rounded">notifications</span>
             <span v-if="unreadCount > 0" class="notif-badge"></span>
           </div>
@@ -235,6 +277,66 @@ const profileImageUrl = computed(() => {
 
 const showMobileMenu = ref(false);
 
+// Search State
+const searchQuery = ref('');
+const searchResults = ref([]);
+const showSearchOverlay = ref(false);
+const searching = ref(false);
+let searchTimeout = null;
+
+const handleSearch = () => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    if (searchQuery.value.trim() === '') {
+        searchResults.value = [];
+        return;
+    }
+    
+    // Only search if length > 1 (optional optimization, but user asked for clear button if > 1)
+    // But for searching, usually we want to search even on 1 char if needed, or maybe 2.
+    // User didn't restrict search length, just clear button visibility.
+    
+    searching.value = true;
+    showSearchOverlay.value = true;
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const res = await api.get(`/users/search?query=${encodeURIComponent(searchQuery.value)}`);
+            searchResults.value = res.data;
+        } catch (err) {
+            console.error('Search error', err);
+        } finally {
+            searching.value = false;
+        }
+    }, 300); 
+};
+
+const clearSearch = () => {
+    searchQuery.value = '';
+    searchResults.value = [];
+    showSearchOverlay.value = false;
+};
+
+const navigateToUserProfile = (user) => {
+    const currentSlug = (authStore.user.slug || authStore.user.nom).replace(/ /g, '_');
+    const targetSlug = (user.slug || user.nom).replace(/ /g, '_');
+    
+    router.push(`/${currentSlug}/profil/${targetSlug}`);
+    
+    showSearchOverlay.value = false;
+    searchQuery.value = ''; 
+    searchResults.value = [];
+};
+
+// Close search overlay when clicking outside
+onMounted(() => {
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-container')) {
+            showSearchOverlay.value = false;
+        }
+    });
+});
+
 const handleImgError = (e) => {
   e.target.src = 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
 };
@@ -413,6 +515,117 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 20px;
+}
+
+/* Search Bar Styles */
+.search-container {
+    position: relative;
+    width: 300px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f0f2f5;
+    border-radius: 50px;
+    padding: 8px 15px;
+    height: 40px;
+    transition: background 0.2s;
+}
+
+.search-input-wrapper:focus-within {
+    background: #e4e6eb;
+}
+
+.search-icon {
+    color: var(--text-muted);
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+.search-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    padding-right: 25px; /* Space for clear icon */
+}
+
+.clear-icon {
+    position: absolute;
+    right: 12px;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.clear-icon:hover {
+    background: rgba(0,0,0,0.1);
+    color: var(--text-color);
+}
+
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.search-results-overlay {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    margin-top: 8px;
+    border-radius: 8px;
+    padding: 8px 0;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.no-results {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f0f2f5;
+}
+
+.search-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.search-username {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .desktop-nav {

@@ -34,14 +34,19 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in sortedUsers" :key="user.id">
+          <tr v-for="user in sortedUsers" :key="user.id" :class="{'expanded': expandedUserId === user.id}">
             <td>
               <div class="user-cell">
-                <img :src="getAvatar(user)" class="avatar-sm" />
-                <div class="user-info">
-                  <span class="name">{{ user.nom }}</span>
-                  <span class="email" v-if="user.email">{{ user.email }}</span>
+                <div class="user-info-group">
+                    <img :src="getAvatar(user)" class="avatar-sm" />
+                    <div class="user-info">
+                    <span class="name">{{ user.nom }}</span>
+                    </div>
                 </div>
+                <!-- Expansion Arrow (Mobile Only) -->
+                <button class="expand-btn mobile-only" @click.stop="toggleDetails(user.id)">
+                    <span class="material-symbols-rounded">expand_more</span>
+                </button>
               </div>
             </td>
             <td data-label="Posts"><span class="stat-number">{{ user.posts_count }}</span></td>
@@ -81,8 +86,13 @@ import api, { BASE_URL } from '@/utils/api';
 import Swal from 'sweetalert2';
 
 const users = ref([]);
+const expandedUserId = ref(null);
 const loading = ref(true);
 const selectedFilter = ref('default');
+
+const toggleDetails = (id) => {
+    expandedUserId.value = expandedUserId.value === id ? null : id;
+};
 
 const sortedUsers = computed(() => {
     const usersCopy = [...users.value];
@@ -290,6 +300,12 @@ onMounted(fetchUsers);
 .modern-table tbody tr:hover td {
     background-color: #f8fafc;
 }
+/* Disable hover on mobile to match user preference "pas background gray" */
+@media (max-width: 768px) {
+    .modern-table tbody tr:hover td {
+        background-color: white;
+    }
+}
 
 .modern-table td {
     padding: 16px 15px;
@@ -330,6 +346,13 @@ onMounted(fetchUsers);
 .user-info {
     display: flex;
     flex-direction: column;
+    text-align: left; /* Ensure left alignment */
+}
+
+.user-info-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .name { 
@@ -425,50 +448,97 @@ onMounted(fetchUsers);
     
     .modern-table tr {
         background: white;
-        margin-bottom: 20px;
-        border-radius: 12px;
-        border: 1px solid #f3f4f6;
-        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 16px;
+        border: 1px solid #f0f2f5;
+        padding: 0;
+        overflow: hidden; /* For smooth expansion */
+        transition: all 0.3s ease;
     }
 
-    .modern-table td {
-        text-align: left; /* Reset center alignment */
-        padding: 8px 0;
+    /* First cell (Header of card) */
+    .modern-table td:first-child {
+        border-bottom: none;
+        padding: 15px;
+        margin: 0;
+        background: white;
+        z-index: 2;
+        position: relative;
+    }
+
+    /* Hidden details cells */
+    .modern-table td:not(:first-child) {
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 15px;
+        margin: 0;
         border: none;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Expanded State */
+    .modern-table tr.expanded td:not(:first-child) {
+        max-height: 60px; /* Adjust based on content */
+        opacity: 1;
+        padding: 10px 15px;
+        border-top: 1px solid #f9fafb;
+    }
+
+     /* Specific adjustments for Actions cell to fit content */
+    .modern-table tr.expanded td[data-label="Actions"] {
+         padding-bottom: 20px; 
+    }
+
+    .modern-table td:not(:first-child) {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        text-align: left;
+    }
+    
+    /* Status alignment: Label left, Badge completely right */
+    .modern-table td[data-label="Statut"] {
+        justify-content: space-between; 
     }
 
-    .modern-table td:first-child {
-        border-radius: 0;
-        border-bottom: 1px solid #f3f4f6;
-        padding-bottom: 12px;
-        margin-bottom: 8px;
-    }
-    
-    .modern-table td:last-child {
-        border-radius: 0;
-        border-top: 1px solid #f3f4f6;
-        padding-top: 12px;
-        margin-top: 8px;
-        justify-content: flex-end;
-    }
-    
     .modern-table td::before {
         content: attr(data-label);
         font-weight: 600;
         color: var(--text-muted);
         font-size: 0.85rem;
-    }
-    
-    /* Hide empty pseudo-element for first cell (cleaner look) */
-    .modern-table td:first-child::before {
-        display: none;
+        min-width: 100px; /* align labels */
     }
 
     .user-cell {
         width: 100%;
+        display: flex;
+        justify-content: space-between; /* Space for arrow */
+        align-items: center;
+    }
+    
+    .expand-btn {
+        background: #f3f4f6;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex; /* block in mobile-only generally, but ensures flex here */
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.3s;
+        color: var(--text-muted);
+    }
+
+    .modern-table tr.expanded .expand-btn {
+        transform: rotate(180deg);
+        /* User requested no background change */
+    }
+
+    .user-info-group {
+        /* Already defined globally, but ensure it takes space properly if needed */
+        flex-grow: 1;
     }
 }
 </style>
