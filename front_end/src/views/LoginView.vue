@@ -112,6 +112,12 @@ const handleLogin = async () => {
 
   try {
     const res = await authStore.login(form);
+    
+    if (res.user.is_admin) {
+        router.push('/admin/dashboard');
+        return;
+    }
+
     const username = (res.user.slug || res.user.nom).replace(/ /g, '_');
     router.push(`/${username}/home`);
   } catch (err) {

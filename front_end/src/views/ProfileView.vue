@@ -968,7 +968,7 @@ watch(activeTab, (newTab) => {
     font-size: 0.95rem;
 }
 
-.btn-share:hover { transform: translateY(-3px); }
+
 
 .btn-share.wa { 
     background: #25D366; 

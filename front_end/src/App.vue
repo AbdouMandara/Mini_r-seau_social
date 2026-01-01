@@ -8,7 +8,7 @@
         <div v-if="authStore.isAuthenticated" class="header-actions">
           <!-- Notification Bell (Mobile & Desktop) -->
           <!-- Notification Bell (Desktop) -->
-          <div class="notif-btn desktop-only" @click="toggleNotifs">
+          <div class="notif-btn desktop-only" @click="toggleNotifs" v-if="!route.path.startsWith('/admin')">
             <span class="material-symbols-rounded">notifications</span>
             <span v-if="unreadCount > 0" class="notif-badge"></span>
           </div>
@@ -25,7 +25,7 @@
               <div class="profile-link-container" @click="toggleUserMenu" :class="{ 'active': showUserMenu }">
                 <div class="avatar-with-name">
                   <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
-                  <span class="user-name-header">{{ authStore.user.nom }}</span>
+                  <span class="user-name-header">{{ authStore.user.is_admin ? (authStore.user.nom.length > 5 ? authStore.user.nom.substring(0, 5) : authStore.user.nom) : authStore.user.nom }}</span>
                   <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
                 </div>
               </div>
@@ -37,41 +37,62 @@
                   <div class="dropdown-user-info" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
                     <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
                     <div class="user-details">
-                      <span class="full-name">{{ authStore.user.nom }}</span>
-                      <span class="view-profile">Voir mon profil</span>
+                      <span class="full-name">{{ authStore.user.is_admin ? (authStore.user.nom.length > 5 ? authStore.user.nom.substring(0, 5) : authStore.user.nom) : authStore.user.nom }}</span>
+                      <span class="view-profile">Bienvenue 😊</span>
                     </div>
                   </div>
                   
                   <div class="dropdown-divider"></div>
 
                   <!-- Menu Options -->
-                  <div v-if="route.name !== 'home'" class="dropdown-item" @click="goHome(); showUserMenu = false">
-                    <div class="item-icon-bg">
-                      <span class="material-symbols-rounded">home</span>
+                  <!-- Admin Options -->
+                  <template v-if="authStore.user.is_admin">
+                    <!-- Bouton qui mène à la route 'dashboard' -->
+                    <div v-if="route.name !== 'admin-dashboard'" class="dropdown-item" @click="router.push('/admin/dashboard'); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">dashboard</span>
+                        </div>
+                        <span>Dashboard</span>
                     </div>
-                    <span>Accueil</span>
-                  </div>
+                    <!-- Bouton qui mène à la route 'feedback' -->
+                    <div v-if="route.name !== 'admin-feedbacks'"  class="dropdown-item" @click="router.push('/admin/feedbacks'); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">feedback</span>
+                        </div>
+                        <span>Feedbacks</span>
+                    </div>
+                  </template>
 
-                  <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
-                    <div class="item-icon-bg">
-                      <span class="material-symbols-rounded">person</span>
+                  <!-- User Options -->
+                  <template v-else>
+                    <div v-if="route.name !== 'home'" class="dropdown-item" @click="goHome(); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">home</span>
+                        </div>
+                        <span>Accueil</span>
                     </div>
-                    <span>Mon Profil</span>
-                  </div>
 
-                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/add_post`); showUserMenu = false">
-                    <div class="item-icon-bg">
-                      <span class="material-symbols-rounded">add_circle</span>
+                    <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">person</span>
+                        </div>
+                        <span>Mon Profil</span>
                     </div>
-                    <span>Ajouter un post</span>
-                  </div>
-                  <!-- Feed back -->
-                  <div class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/feedback`); showUserMenu = false">
-                    <div class="item-icon-bg">
-                      <span class="material-symbols-rounded">info</span>
+
+                    <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/add_post`); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">add_circle</span>
+                        </div>
+                        <span>Ajouter un post</span>
                     </div>
-                    <span>Envoyer un feedback</span>
-                  </div>
+                    <!-- Feed back -->
+                    <div class="dropdown-item" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/feedback`); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">info</span>
+                        </div>
+                        <span>Envoyer un feedback</span>
+                    </div>
+                  </template>
 
 
                   <div class="dropdown-divider"></div>
@@ -134,7 +155,23 @@
                     <span v-if="unreadCount > 0" class="badge-count">{{ unreadCount }}</span>
                 </div>
                 
-                <div class="menu-item-mobile" @click="navigateToFeedback">
+                <!-- Admin Menu Items -->
+                <template v-if="authStore.user.is_admin">
+                    <div v-if="route.name !== 'admin-dashboard'" class="menu-item-mobile" @click="router.push('/admin/dashboard'); showMobileMenu = false">
+                        <div class="label-with-icon">
+                            <span class="material-symbols-rounded">dashboard</span>
+                            Dashboard
+                        </div>
+                    </div>
+                    <div v-if="route.name !== 'admin-feedbacks'" class="menu-item-mobile" @click="router.push('/admin/feedbacks'); showMobileMenu = false">
+                        <div class="label-with-icon">
+                            <span class="material-symbols-rounded">feedback</span>
+                            Feedbacks
+                        </div>
+                    </div>
+                </template>
+
+                <div v-if="!route.path.startsWith('/admin')" class="menu-item-mobile" @click="navigateToFeedback">
                     <div class="label-with-icon">
                         <span class="material-symbols-rounded">rate_review</span>
                         Donner un avis
@@ -150,7 +187,7 @@
     </main>
 
     <!-- Footer Mobile -->
-    <nav v-if="authStore.isAuthenticated" class="mobile-footer">
+    <nav v-if="authStore.isAuthenticated && !route.path.startsWith('/admin')" class="mobile-footer">
       <div class="footer-grid">
         <router-link :to="`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/home`" class="footer-item">
           <span class="material-symbols-rounded">home</span>
@@ -383,7 +420,6 @@ onMounted(() => {
   gap: 20px;
   align-items: center;
 }
-
 .cta-add {
     display: flex;
     align-items: center;
@@ -403,16 +439,10 @@ onMounted(() => {
   border: 2px solid transparent;
   transition: all 0.2s;
 }
-
-.mini-avatar:hover {
-    transform: scale(1.05);
-}
-
 .profile-link {
     display: flex;
     align-items: center;
 }
-
 .notif-btn {
   display: flex;
   position: relative;

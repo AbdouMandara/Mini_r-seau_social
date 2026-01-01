@@ -9,6 +9,11 @@ class Feedback extends Model
 {
     use HasUuids;
 
+    protected $table = 'feedbacks';
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = ['user_id', 'rating', 'comment'];
 
     public function user()

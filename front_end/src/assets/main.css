@@ -47,9 +47,7 @@ button, a, input, textarea {
   gap: 8px;
 }
 
-.btn:active {
-  transform: scale(0.96);
-}
+
 
 .btn-primary {
   background: var(--primary-color);
@@ -58,7 +56,6 @@ button, a, input, textarea {
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
   background: #166fe5;
   box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4);
 }

@@ -16,14 +16,13 @@ class AdminController extends Controller
     public function getDashboardStats()
     {
         $totalUsers = User::count();
-        // Users seen in the last 5 minutes
-        $onlineUsers = User::where('last_seen_at', '>=', Carbon::now()->subMinutes(5))->count();
+        $totalPosts = Post::count();
         $totalLikes = Like::count();
         $totalComments = Comment::count();
 
         return response()->json([
             'total_users' => $totalUsers,
-            'online_users' => $onlineUsers,
+            'total_posts' => $totalPosts,
             'total_likes' => $totalLikes,
             'total_comments' => $totalComments,
         ]);

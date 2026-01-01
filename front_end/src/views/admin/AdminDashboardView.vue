@@ -1,62 +1,73 @@
 <template>
-  <div class="admin-dashboard">
-    <h2 class="page-title">Bienvenue, Admin</h2>
+  <div class="admin-dashboard-layout">
+    <!-- Sidebar / Stats Section -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <h2>Dashboard</h2>
+      </div>
 
-    <div v-if="loading" class="loader-container">
-        <div class="spinner"></div> <!-- Simple spinner or component -->
-    </div>
+      <div v-if="loading" class="loader-container">
+        <div class="spinner"></div>
+      </div>
 
-    <div v-else class="stats-grid">
-      <div class="stat-card">
-        <div class="icon-wrapper blue">
+      <div v-else class="stats-column">
+        <div class="stat-card">
+          <div class="icon-wrapper blue">
             <span class="material-symbols-rounded">group</span>
-        </div>
-        <div class="stat-content">
-            <h3>Utilisateurs Total</h3>
+          </div>
+          <div class="stat-content">
+            <h3>Utilisateurs</h3>
             <p class="stat-value">{{ stats.total_users }}</p>
+          </div>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="icon-wrapper green">
-            <span class="material-symbols-rounded">wifi</span>
+        <div class="stat-card">
+          <div class="icon-wrapper green">
+            <span class="material-symbols-rounded">article</span>
+          </div>
+          <div class="stat-content">
+            <h3>Posts</h3>
+            <p class="stat-value">{{ stats.total_posts }}</p>
+          </div>
         </div>
-        <div class="stat-content">
-            <h3>En Ligne (5min)</h3>
-            <p class="stat-value">{{ stats.online_users }}</p>
-        </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="icon-wrapper red">
+        <div class="stat-card">
+          <div class="icon-wrapper red">
             <span class="material-symbols-rounded">favorite</span>
-        </div>
-        <div class="stat-content">
-            <h3>Likes Total</h3>
+          </div>
+          <div class="stat-content">
+            <h3>Likes</h3>
             <p class="stat-value">{{ stats.total_likes }}</p>
+          </div>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="icon-wrapper purple">
+        <div class="stat-card">
+          <div class="icon-wrapper purple">
             <span class="material-symbols-rounded">chat_bubble</span>
-        </div>
-        <div class="stat-content">
+          </div>
+          <div class="stat-content">
             <h3>Commentaires</h3>
             <p class="stat-value">{{ stats.total_comments }}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+      <AdminUsersView />
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/utils/api';
+import AdminUsersView from './AdminUsersView.vue';
 
 const stats = ref({
     total_users: 0,
-    online_users: 0,
+    total_posts: 0,
     total_likes: 0,
     total_comments: 0
 });
@@ -81,67 +92,144 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-title {
-    margin-bottom: 30px;
-    font-size: 1.8rem;
-    color: #1c1e21;
+.admin-dashboard-layout {
+    display: flex;
+    min-height: calc(100vh - 64px); /* Assuming navbar height */
+    gap: 30px;
+    padding: 20px;
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+.dashboard-sidebar {
+    padding:  0.75em 0;
+    width: 250px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
     gap: 20px;
+}
+
+.sidebar-header h2 {
+    font-size: 1.5rem;
+    color: #1c1e21;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.stats-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .stat-card {
     background: white;
-    padding: 24px;
+    padding: 20px;
     border-radius: 16px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    transition: transform 0.2s;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+
 .icon-wrapper {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .icon-wrapper span {
-    font-size: 32px;
+    font-size: 24px;
     color: white;
 }
 
-.icon-wrapper.blue { background: #3b82f6; }
-.icon-wrapper.green { background: #10b981; }
-.icon-wrapper.red { background: #ef4444; }
-.icon-wrapper.purple { background: #8b5cf6; }
+.icon-wrapper.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.icon-wrapper.green { background: linear-gradient(135deg, #10b981, #059669); }
+.icon-wrapper.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.icon-wrapper.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+.stat-content {
+    overflow: hidden;
+}
 
 .stat-content h3 {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    margin-bottom: 5px;
+    margin-bottom: 4px;
+    font-weight: 600;
 }
 
 .stat-value {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #1c1e21;
+}
+
+.dashboard-main {
+    flex-grow: 1;
+    min-width: 0; /* Prevents overflow issues */
 }
 
 .loader-container {
     display: flex;
     justify-content: center;
     padding: 50px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .admin-dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .dashboard-sidebar {
+        width: 100%;
+        flex-direction: column;
+        overflow-x: visible;
+        padding-bottom: 0;
+    }
+
+    .sidebar-header {
+        display: none;
+    }
+
+    .stats-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .stat-card {
+        min-width: 0;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .icon-wrapper {
+        width: 36px;
+        height: 36px;
+    }
+
+    .icon-wrapper span {
+        font-size: 20px;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .stat-content h3 {
+        font-size: 0.75rem;
+    }
 }
 </style>

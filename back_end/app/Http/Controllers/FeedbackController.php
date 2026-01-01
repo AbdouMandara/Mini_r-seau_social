@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Feedback;
 
 class FeedbackController extends Controller
 {
@@ -13,7 +14,7 @@ class FeedbackController extends Controller
             'comment' => 'required|string|max:255',
         ]);
 
-        \App\Models\Feedback::create([
+        Feedback::create([
             'user_id' => $request->user()->id,
             'rating' => $request->rating,
             'comment' => $request->comment,

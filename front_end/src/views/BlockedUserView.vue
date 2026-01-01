@@ -118,7 +118,6 @@ h1 {
 
 .btn-primary-modern:hover {
     background: #b91c1c;
-    transform: translateY(-2px);
 }
 
 .btn-ghost {

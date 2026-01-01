@@ -51,25 +51,22 @@ const router = createRouter({
       component: () => import('@/views/AddPostView.vue'),
       meta: { auth: true }
     },
-    // Admin Routes
     {
       path: '/admin',
-      component: () => import('@/views/admin/AdminLayout.vue'),
-      meta: { auth: true, admin: true },
-      children: [
-        {
-          path: 'dashboard',
-          component: () => import('@/views/admin/AdminDashboardView.vue'),
-        },
-        {
-          path: 'users',
-          component: () => import('@/views/admin/AdminUsersView.vue'),
-        },
-        {
-            path: 'feedbacks',
-            component: () => import('@/views/admin/AdminFeedbacksView.vue'),
-        }
-      ]
+      redirect: '/admin/dashboard',
+      meta: { auth: true, admin: true }
+    },
+    {
+       path: '/admin/dashboard',
+       name: 'admin-dashboard',
+       component: () => import('@/views/admin/AdminDashboardView.vue'),
+       meta: { auth: true, admin: true }
+    },
+    {
+        path: '/admin/feedbacks',
+        name: 'admin-feedbacks',
+        component: () => import('@/views/admin/AdminFeedbacksView.vue'),
+        meta: { auth: true, admin: true }
     },
     // Blocked Route
     {
@@ -110,6 +107,17 @@ router.beforeEach((to, from, next) => {
   }
 
   if (isAuthenticated) {
+    // Admin Isolation
+    if (user.is_admin) {
+        // If trying to access non-admin pages (except login/blocked which are handled elsewhere or irrelevant)
+        // We allow accessing /admin/* and maybe some specifics, but user said "que à la page admin"
+        if (!to.path.startsWith('/admin') && to.name !== 'login') {
+             next('/admin/dashboard');
+             return;
+        }
+    }
+
+    // Guest pages for logged in users
     if (to.meta.guest) {
       if (user.is_admin) {
         next('/admin/dashboard');
@@ -119,16 +127,17 @@ router.beforeEach((to, from, next) => {
       return;
     }
 
+    // Blocked User
     if (user.is_blocked && to.name !== 'blocked') {
         next('/user_bloque');
         return;
     }
-
     if (to.name === 'blocked' && !user.is_blocked) {
         next(`/${user.nom}/home`);
         return;
     }
 
+    // Protected Admin Routes for non-admins
     if (to.meta.admin && !user.is_admin) {
         next(`/${user.nom}/home`);
         return;
