@@ -3,7 +3,7 @@ import api from '@/utils/api';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        user: JSON.parse(localStorage.getItem('user')) || null,
+        user: null, // Don't load from localStorage
         token: localStorage.getItem('auth_token') || null,
         loading: false,
         error: null,
@@ -55,20 +55,21 @@ export const useAuthStore = defineStore('auth', {
         setAuth(user, token) {
             this.user = user;
             this.token = token;
-            localStorage.setItem('user', JSON.stringify(user));
+            // Removed user storage and clean up old
             localStorage.setItem('auth_token', token);
+            localStorage.removeItem('user');
         },
         clearAuth() {
             this.user = null;
             this.token = null;
-            localStorage.removeItem('user');
-            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_token'); 
+            localStorage.removeItem('user'); 
         },
         async fetchProfile() {
             try {
                 const response = await api.get('/user');
                 this.user = response.data;
-                localStorage.setItem('user', JSON.stringify(this.user));
+                // No storage here
             } catch (err) {
                 this.clearAuth();
             }

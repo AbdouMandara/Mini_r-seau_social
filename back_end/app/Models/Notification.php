@@ -22,6 +22,10 @@ class Notification extends Model
         'is_read'
     ];
 
+    protected $casts = [
+        'is_read' => 'boolean'
+    ];
+
     public function target(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_user_target');

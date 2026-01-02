@@ -2,9 +2,7 @@
   <div class="admin-dashboard-layout">
     <!-- Sidebar / Stats Section -->
     <aside class="dashboard-sidebar">
-      <div class="sidebar-header">
-        <h2>Dashboard</h2>
-      </div>
+      <!-- Header Removed as requested -->
 
       <div v-if="loading" class="loader-container">
         <div class="spinner"></div>
@@ -50,6 +48,17 @@
             <p class="stat-value">{{ stats.total_comments }}</p>
           </div>
         </div>
+
+        <!-- Real-time Clock Card -->
+        <div class="stat-card">
+          <div class="icon-wrapper orange">
+            <span class="material-symbols-rounded">schedule</span>
+          </div>
+          <div class="stat-content">
+            <h3>Heure</h3>
+            <p class="stat-value">{{ currentTime }}</p>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -61,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import api from '@/utils/api';
 import AdminUsersView from './AdminUsersView.vue';
 
@@ -72,6 +81,7 @@ const stats = ref({
     total_comments: 0
 });
 const loading = ref(true);
+const currentTime = ref('');
 
 const fetchStats = async () => {
     try {
@@ -84,11 +94,21 @@ const fetchStats = async () => {
     }
 };
 
-onMounted(() => {
     fetchStats();
     // Refresh stats every 30 seconds
-    setInterval(fetchStats, 30000);
-});
+    const statsInterval = setInterval(fetchStats, 30000);
+
+    // Clock Logic
+    currentTime.value = new Date().toLocaleTimeString('fr-FR');
+    const clockInterval = setInterval(() => {
+        currentTime.value = new Date().toLocaleTimeString('fr-FR');
+    }, 1000);
+
+    onUnmounted(() => {
+        clearInterval(statsInterval);
+        clearInterval(clockInterval);
+    });
+
 </script>
 
 <style scoped>
@@ -156,6 +176,7 @@ onMounted(() => {
 .icon-wrapper.green { background: linear-gradient(135deg, #10b981, #059669); }
 .icon-wrapper.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .icon-wrapper.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.icon-wrapper.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
 .stat-content {
     overflow: hidden;

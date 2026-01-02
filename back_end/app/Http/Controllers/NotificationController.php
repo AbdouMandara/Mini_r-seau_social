@@ -19,10 +19,10 @@ class NotificationController extends Controller
 
     public function markAsRead(Request $request)
     {
-        Notification::where('id_user_target', $request->user()->id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+        $count = Notification::where('id_user_target', $request->user()->id)
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
 
-        return response()->json(['message' => 'Notifications marquées comme lues']);
+        return response()->json(['message' => 'Notifications marquées comme lues', 'updated' => $count]);
     }
 }

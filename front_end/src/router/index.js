@@ -96,8 +96,22 @@ const router = createRouter({
   });
   
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+  const token = authStore.token;
+
+  // Restore session if needed
+  if (token && !authStore.user) {
+    try {
+        await authStore.fetchProfile();
+    } catch (error) {
+        // Token likely invalid
+        authStore.clearAuth();
+        next('/login');
+        return;
+    }
+  }
+
   const isAuthenticated = authStore.isAuthenticated;
   const user = authStore.user;
 
@@ -106,7 +120,7 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && user) {
     // Admin Isolation
     if (user.is_admin) {
         // If trying to access non-admin pages (except login/blocked which are handled elsewhere or irrelevant)

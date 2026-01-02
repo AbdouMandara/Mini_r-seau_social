@@ -1232,6 +1232,10 @@ watch(activeTab, (newTab) => {
 
 .input-wrapper select:focus { outline: none; }
 
+.modern-form {
+  padding: 20px;
+}
+
 .modern-form textarea {
   width: 100%;
   background: #f8f9fa;

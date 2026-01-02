@@ -15,7 +15,7 @@ class AdminController extends Controller
 {
     public function getDashboardStats()
     {
-        $totalUsers = User::count();
+        $totalUsers = User::where('is_admin', false)->count();
         $totalPosts = Post::count();
         $totalLikes = Like::count();
         $totalComments = Comment::count();

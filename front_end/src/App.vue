@@ -1,14 +1,14 @@
 <template>
   <div class="app-wrapper">
     <!-- Header Desktop/Mobile -->
-    <header class="main-header">
+    <header class="main-header" v-if="!isBlockedPage">
       <div class="header-content container">
         <h1 class="logo clickable" @click="goHome">!Pozterr</h1>
         
-        <div v-if="authStore.isAuthenticated" class="header-actions">
+        <div v-if="authStore.isAuthenticated && authStore.user" class="header-actions">
           <!-- Notification Bell (Mobile & Desktop) -->
           <!-- Search Bar (Desktop) -->
-          <div class="search-container desktop-only">
+          <div v-if="!authStore.user.is_admin" class="search-container desktop-only">
              <div class="search-input-wrapper">
                 <span class="material-symbols-rounded search-icon">search</span>
                 <input 
@@ -219,6 +219,13 @@
                         Donner un avis
                     </div>
                 </div>
+
+                <div class="menu-item-mobile logout-item-mobile" @click="handleLogout(); showMobileMenu = false">
+                    <div class="label-with-icon">
+                        <span class="material-symbols-rounded">logout</span>
+                        Déconnexion
+                    </div>
+                </div>
             </div>
         </div>
     </Transition>
@@ -229,7 +236,7 @@
     </main>
 
     <!-- Footer Mobile -->
-    <nav v-if="authStore.isAuthenticated && !route.path.startsWith('/admin')" class="mobile-footer">
+    <nav v-if="authStore.isAuthenticated && authStore.user && !route.path.startsWith('/admin') && !isBlockedPage" class="mobile-footer">
       <div class="footer-grid">
         <router-link :to="`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/home`" class="footer-item">
           <span class="material-symbols-rounded">home</span>
@@ -266,6 +273,8 @@ const showUserMenu = ref(false);
 const notifications = ref([]);
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length);
 const prevUnreadCount = ref(0);
+
+const isBlockedPage = computed(() => route.name === 'blocked');
 
 const profileImageUrl = computed(() => {
   if (authStore.user?.photo_profil) {
@@ -741,6 +750,17 @@ onMounted(() => {
     .desktop-only {
         display: none !important;
     }
+}
+
+.logout-item-mobile {
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    color: var(--error);
+}
+
+.logout-item-mobile .material-symbols-rounded {
+    color: var(--error);
 }
 
 .footer-grid {
