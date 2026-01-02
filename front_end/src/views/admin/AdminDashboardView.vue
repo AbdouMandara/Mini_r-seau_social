@@ -50,7 +50,7 @@
         </div>
 
         <!-- Real-time Clock Card -->
-        <div class="stat-card">
+        <div class="stat-card clock-card">
           <div class="icon-wrapper orange">
             <span class="material-symbols-rounded">schedule</span>
           </div>
@@ -94,20 +94,25 @@ const fetchStats = async () => {
     }
 };
 
+let statsInterval = null;
+let clockInterval = null;
+
+onMounted(() => {
     fetchStats();
     // Refresh stats every 30 seconds
-    const statsInterval = setInterval(fetchStats, 30000);
+    statsInterval = setInterval(fetchStats, 30000);
 
     // Clock Logic
     currentTime.value = new Date().toLocaleTimeString('fr-FR');
-    const clockInterval = setInterval(() => {
+    clockInterval = setInterval(() => {
         currentTime.value = new Date().toLocaleTimeString('fr-FR');
     }, 1000);
+});
 
-    onUnmounted(() => {
-        clearInterval(statsInterval);
-        clearInterval(clockInterval);
-    });
+onUnmounted(() => {
+    if (statsInterval) clearInterval(statsInterval);
+    if (clockInterval) clearInterval(clockInterval);
+});
 
 </script>
 
@@ -251,6 +256,12 @@ const fetchStats = async () => {
     
     .stat-content h3 {
         font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .clock-card {
+        display: none !important;
     }
 }
 </style>
