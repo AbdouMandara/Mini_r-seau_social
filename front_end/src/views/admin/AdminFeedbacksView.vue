@@ -161,10 +161,10 @@ onMounted(fetchFeedbacks);
 
 <style scoped>
 .admin-feedbacks-view {
-    background: white;
+    background: var(--card-bg);
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid var(--border-color);
     height: 100%;
     margin: 0.75em;
 }
@@ -175,13 +175,13 @@ onMounted(fetchFeedbacks);
     align-items: flex-end;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .page-title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #1c1e21;
+    color: var(--text-color);
     margin-bottom: 4px;
 }
 
@@ -219,10 +219,10 @@ onMounted(fetchFeedbacks);
     -webkit-appearance: none;
     padding: 10px 40px 10px 40px;
     font-size: 0.9rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 12px;
-    background-color: #f9fafb;
-    color: #374151;
+    background-color: var(--input-bg);
+    color: var(--text-color);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -230,15 +230,13 @@ onMounted(fetchFeedbacks);
 }
 
 .custom-select:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: var(--secondary-color);
 }
 
 .custom-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1);
-    background-color: white;
+    background-color: var(--card-bg);
 }
 
 .feedback-grid {
@@ -255,14 +253,14 @@ onMounted(fetchFeedbacks);
 }
 
 .feedback-card {
-    background: white;
-    border: 1px solid #f0f2f5;
-    border-radius: 20px; /* Slightly more rounded */
-    padding: 30px; /* Increased padding from 20px */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px; 
+    padding: 30px; 
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
-    min-height: 250px; /* Ensure better height */
+    min-height: 250px; 
 }
 
 .card-header {
@@ -279,12 +277,11 @@ onMounted(fetchFeedbacks);
 }
 
 .avatar-sm {
-    width: 55px; /* Increased size */
-    height: 55px; /* Increased size */
+    width: 55px; 
+    height: 55px; 
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 2px solid var(--card-bg);
 }
 
 .user-meta {
@@ -295,7 +292,7 @@ onMounted(fetchFeedbacks);
 .user-name {
     font-weight: 700;
     font-size: 0.95rem;
-    color: #1c1e21;
+    color: var(--text-color);
 }
 
 .feedback-date {
@@ -320,18 +317,18 @@ onMounted(fetchFeedbacks);
 .star-icon { font-size: 16px; }
 
 .card-body {
-    background: #fcfcfc;
+    background: var(--input-bg);
     padding: 15px;
-    border-radius: 16px; /* Increased radius */
-    border: 1px solid #f3f4f6;
-    margin-bottom: 25px; /* Increased margin */
+    border-radius: 16px; 
+    border: 1px solid var(--border-color);
+    margin-bottom: 25px; 
     flex-grow: 1;
 }
 
 .feedback-text {
-    color: #4b5563;
+    color: var(--text-color);
     font-style: italic;
-    font-size: 1.1rem; /* Increased font size */
+    font-size: 1.1rem; 
     line-height: 1.6;
 }
 
@@ -340,7 +337,7 @@ onMounted(fetchFeedbacks);
     justify-content: flex-end;
     gap: 10px;
     padding-top: 15px;
-    border-top: 1px solid #f0f2f5;
+    border-top: 1px solid var(--border-color);
 }
 
 .btn-action {
@@ -348,7 +345,7 @@ onMounted(fetchFeedbacks);
     height: 36px;
     border-radius: 10px;
     border: none;
-    background: #f3f4f6;
+    background: var(--input-bg);
     color: var(--text-muted);
     display: flex;
     align-items: center;

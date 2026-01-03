@@ -1,0 +1,34 @@
+C'est une excellente question pour bien comprendre comment ta sécurité fonctionne maintenant. Voici précisément comment ça se passe :
+
+1. Où sont les "tokens" ?
+Depuis que nous sommes passés en Session Auth (plus sécurisé que le simple localStorage), il n'y a plus de token visible dans le code ou le localStorage. Ils sont stockés dans ton navigateur, dans l'onglet Application > Cookies :
+
+XSRF-TOKEN : C'est ton jeton de sécurité (CSRF). Il sert à prouver que c'est bien ton application qui envoie la requête et pas un site malveillant.
+laravel_session : C'est lui qui remplace l'ancien auth_token. C'est un cookie HttpOnly (invisible pour le JavaScript), ce qui le rend impossible à voler par un pirate.
+2. Sont-ils régénérés à la connexion / inscription ?
+Oui, absolument. C'est une sécurité standard de Laravel pour éviter le vol de session ("Session Fixation") :
+
+Connexion (
+login
+) : Dès que les identifiants sont bons, Laravel appelle $request->session()->regenerate(). Cela change l'identifiant de session pour repartir sur une base neuve et sécurisée.
+Inscription (
+register
+) : Même chose. Une nouvelle session est créée dès que l'utilisateur est enregistré.
+Avant chaque action critique : Ton frontend appelle toujours /sanctum/csrf-cookie juste avant de se connecter ou s'inscrire pour être sûr d'avoir un token CSRF tout frais.
+3. Sont-ils détruits à la déconnexion ?
+Oui, totalement. Dans ton 
+AuthController.php
+, j'ai blindé la méthode 
+logout
+ :
+
+php
+public function logout(Request $request) {
+    Auth::guard('web')->logout();        // Déconnecte l'utilisateur
+    $request->session()->invalidate();    // Détruit la session sur le serveur
+    $request->session()->regenerateToken(); // Change le token CSRF pour le prochain utilisateur
+    // ...
+}
+Côté Serveur : La session est supprimée de la mémoire (ou du fichier). Même si quelqu'un volait le cookie après, il ne servirait plus à rien.
+Côté Navigateur : Le cookie devient invalide. Lors de la prochaine connexion, tout repart de zéro.
+C'est ce cycle Nettoyage -> Régénération -> Destruction qui fait que ton application est maintenant très robuste ! 🔐✨

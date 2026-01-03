@@ -132,20 +132,22 @@ const handleSubmit = async () => {
 .form-title {
     margin-bottom: 25px;
     font-size: 1.5rem;
-    color: #1c1e21;
+    color: var(--text-color);
 }
 
 .input-control {
     width: 100%;
     padding: 12px;
-    border: 2px solid #dddfe2;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
+    background: var(--input-bg);
+    color: var(--text-color);
     transition: border-color 0.2s;
 }
 
 .input-control.readonly {
-    background-color: #f0f2f5;
+    background-color: var(--secondary-color);
     color: var(--text-muted);
     cursor: not-allowed;
 }
@@ -155,7 +157,7 @@ const handleSubmit = async () => {
     gap: 10px;
     font-size: 2rem;
     cursor: pointer;
-    color: #dddfe2;
+    color: var(--border-color);
 }
 
 .star.filled {

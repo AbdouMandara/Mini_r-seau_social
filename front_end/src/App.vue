@@ -50,6 +50,10 @@
           </div>
 
           <!-- Notification Bell (Desktop) -->
+          <div class="theme-toggle desktop-only" @click="themeStore.toggleTheme">
+            <span class="material-symbols-rounded">{{ themeStore.isDark ? 'light_mode' : 'dark_mode' }}</span>
+          </div>
+
           <div class="notif-btn desktop-only" @click="toggleNotifs">
             <span class="material-symbols-rounded">notifications</span>
             <span v-if="unreadCount > 0" class="notif-badge"></span>
@@ -213,6 +217,13 @@
                     </div>
                 </template>
 
+                <div class="menu-item-mobile" @click="themeStore.toggleTheme">
+                    <div class="label-with-icon">
+                        <span class="material-symbols-rounded">{{ themeStore.isDark ? 'light_mode' : 'dark_mode' }}</span>
+                        Mode {{ themeStore.isDark ? 'Clair' : 'Sombre' }}
+                    </div>
+                </div>
+
                 <div v-if="!route.path.startsWith('/admin')" class="menu-item-mobile" @click="navigateToFeedback">
                     <div class="label-with-icon">
                         <span class="material-symbols-rounded">rate_review</span>
@@ -259,12 +270,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
 import { useRouter, useRoute } from 'vue-router';
 import api, { BASE_URL } from '@/utils/api';
 import Loader from '@/components/Loader.vue';
 import Swal from 'sweetalert2';
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -493,8 +506,8 @@ onMounted(() => {
 }
 
 .main-header {
-  background: var(--white);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 200;
@@ -537,7 +550,7 @@ onMounted(() => {
     position: relative;
     display: flex;
     align-items: center;
-    background: #f0f2f5;
+    background: var(--input-bg);
     border-radius: 50px;
     padding: 8px 15px;
     height: 40px;
@@ -545,7 +558,7 @@ onMounted(() => {
 }
 
 .search-input-wrapper:focus-within {
-    background: #e4e6eb;
+    background: var(--secondary-color);
 }
 
 .search-icon {
@@ -591,13 +604,10 @@ onMounted(() => {
     top: 100%;
     left: 0;
     width: 100%;
-    background: white;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     margin-top: 8px;
     border-radius: 8px;
-    padding: 8px 0;
-    max-height: 400px;
-    overflow-y: auto;
-    z-index: 1000;
 }
 
 .no-results {
@@ -617,7 +627,7 @@ onMounted(() => {
 }
 
 .search-result-item:hover {
-    background: #f0f2f5;
+    background: var(--secondary-color);
 }
 
 .search-avatar {
@@ -666,7 +676,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
 }
-.notif-btn {
+.notif-btn, .theme-toggle {
   display: flex;
   position: relative;
   cursor: pointer;
@@ -674,7 +684,7 @@ onMounted(() => {
   transition: color 0.2s;
 }
 
-.notif-btn:hover {
+.notif-btn:hover, .theme-toggle:hover {
     color: var(--primary-color);
 }
 
@@ -707,7 +717,7 @@ onMounted(() => {
 }
 
 .btn-home-link:hover {
-    background: #f0f2f5;
+    background: var(--secondary-color);
 }
 
 .notif-badge {
@@ -717,7 +727,7 @@ onMounted(() => {
     width: 10px;
     height: 10px;
     background: var(--error);
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
     border-radius: 50%;
 }
 
@@ -726,8 +736,8 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--white);
-  border-top: 1px solid #dddfe2;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
   height: 65px;
   z-index: 100;
   display: block;
@@ -755,7 +765,7 @@ onMounted(() => {
 
 .logout-item-mobile {
     margin-top: 10px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
     padding-top: 15px;
     color: var(--error);
 }
@@ -796,7 +806,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(24, 119, 242, 0.4);
 }
 
 /* Notif Drawer */
@@ -822,7 +831,7 @@ onMounted(() => {
 
 .drawer-header {
     padding: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -850,12 +859,16 @@ onMounted(() => {
     display: flex;
     gap: 12px;
     padding: 12px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: background 0.2s;
 }
 
+.notif-item:hover {
+    background: var(--secondary-color);
+}
+
 .notif-item.unread {
-    background-color: #f0f7ff;
+    background-color: rgba(24, 119, 242, 0.1);
 }
 
 .notif-avatar {
@@ -922,7 +935,8 @@ onMounted(() => {
   padding: 10px;
   z-index: 400;
   border-radius: 20px;
-  border: 1px solid #f0f2f5;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
 }
 
 .dropdown-user-info {
@@ -979,8 +993,8 @@ onMounted(() => {
 .item-icon-bg {
   width: 36px;
   height: 36px;
-  background: #f0f2f5;
-  border-radius: 50%;
+  background: var(--input-bg);
+  border-radius: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -997,7 +1011,7 @@ onMounted(() => {
 }
 
 .dropdown-item:hover .item-icon-bg {
-  background: white;
+  background: var(--secondary-color);
 }
 
 .dropdown-item:hover .item-icon-bg span {
@@ -1006,17 +1020,13 @@ onMounted(() => {
 
 .dropdown-divider {
   height: 1px;
-  background: #f0f2f5;
+  background: var(--border-color);
   margin: 10px 0;
 }
 
 .logout-item:hover {
-  background: #fff0f0;
+  background: rgba(240, 40, 73, 0.1);
   color: var(--error);
-}
-
-.logout-item:hover .item-icon-bg {
-  background: white;
 }
 
 .logout-item:hover .item-icon-bg span {
@@ -1046,13 +1056,13 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     cursor: pointer;
 }
 
 .menu-item-mobile:hover {
-    background: #f8f9fa;
+    background: var(--secondary-color);
 }
 
 .label-with-icon {

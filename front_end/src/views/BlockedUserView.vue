@@ -43,23 +43,23 @@ const logout = async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fdf2f2;
+    background: var(--bg-color);
     padding: 20px;
 }
 
 .blocked-content {
     text-align: center;
-    background: white;
+    background: var(--card-bg);
     padding: 40px;
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(220, 38, 38, 0.1);
+    border: 2px solid var(--error);
     max-width: 500px;
 }
 
 .icon-container {
     width: 80px;
     height: 80px;
-    background: #fee2e2;
+    background: rgba(240, 40, 73, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -69,24 +69,24 @@ const logout = async () => {
 
 .icon-container span {
     font-size: 40px;
-    color: #dc2626;
+    color: var(--error);
 }
 
 h1 {
-    color: #1c1e21;
+    color: var(--text-color);
     margin-bottom: 10px;
     font-size: 1.8rem;
 }
 
 .reason {
-    color: #dc2626;
+    color: var(--error);
     font-weight: 700;
     font-size: 1.1rem;
     margin-bottom: 15px;
 }
 
 .description {
-    color: #6b7280;
+    color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 30px;
 }
@@ -112,22 +112,22 @@ h1 {
 }
 
 .btn-primary-modern {
-    background: #dc2626;
+    background: var(--error);
     color: white;
 }
 
 .btn-primary-modern:hover {
-    background: #b91c1c;
+    opacity: 0.9;
 }
 
 .btn-ghost {
     background: transparent;
-    color: #6b7280;
+    color: var(--text-muted);
 }
 
 .btn-ghost:hover {
-    background: #f3f4f6;
-    color: #1c1e21;
+    background: var(--input-bg);
+    color: var(--text-color);
 }
 
 .animate-fade-in {

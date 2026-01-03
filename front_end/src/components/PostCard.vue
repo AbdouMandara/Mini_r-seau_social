@@ -259,7 +259,7 @@ const editPost = () => {
 .post-footer {
   display: flex;
   justify-content: space-around;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
   padding-top: 10px;
 }
 
@@ -277,7 +277,7 @@ const editPost = () => {
 }
 
 .action-btn:hover:not(:disabled) {
-  background: #f0f2f5;
+  background: var(--secondary-color);
 }
 
 .action-btn.liked .material-symbols-rounded {
@@ -309,9 +309,9 @@ const editPost = () => {
   position: absolute;
   right: 0;
   top: 30px;
-  background: white;
-  box-shadow: var(--shadow);
-  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   padding: 8px;
   z-index: 10;
 }

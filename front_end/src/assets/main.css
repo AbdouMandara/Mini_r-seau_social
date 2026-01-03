@@ -3,17 +3,30 @@
 :root {
   --primary-color: #1877f2;
   --secondary-color: #f0f2f5;
+  --bg-color: #f0f2f5;
+  --card-bg: #ffffff;
+  --input-bg: #f1f5f9;
   --text-color: #1c1e21;
   --text-muted: #65676b;
   --white: #ffffff;
   --error: #f02849;
   --success: #42b72a;
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
+  --border-color: rgba(0, 0, 0, 0.1);
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
+}
+
+/* Dark Mode Variables */
+.dark {
+  --secondary-color: #0d1117;
+  --bg-color: #0d1117;
+  --card-bg: #161b22;
+  --input-bg: #0d1117;
+  --text-color: #e6edf3;
+  --text-muted: #8b949e;
+  --white: #161b22;
+  --border-color: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -47,17 +60,17 @@ button, a, input, textarea {
   gap: 8px;
 }
 
-
+.btn:hover {
+    opacity: 0.85;
+}
 
 .btn-primary {
   background: var(--primary-color);
   color: var(--white);
-  box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
 }
 
 .btn-primary:hover {
-  background: #166fe5;
-  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4);
+  background: var(--primary-color);
 }
 
 .input-group {
@@ -74,26 +87,35 @@ button, a, input, textarea {
 .input-control {
   width: 100%;
   padding: 12px;
-  border: 1px solid #dddfe2;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-color);
   border-radius: 6px;
   font-size: 16px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .input-control:focus {
   outline: none;
   border-color: var(--primary-color);
+  background: var(--card-bg);
 }
 
 .card {
-  background: var(--white);
+  background: var(--card-bg);
   padding: 24px;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0,0,0,0.03);
-  transition: box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
-.card:hover {
-    box-shadow: var(--shadow-lg);
+.clickable:hover {
+    opacity: 0.8;
+}
+
+/* Base Utility Classes */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
 }

@@ -134,7 +134,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: var(--bg-color);
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -173,12 +173,11 @@ const handleLogin = async () => {
   width: 100%;
   max-width: 420px;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   border-radius: 30px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
   z-index: 1;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid var(--border-color);
 }
 
 .auth-header {
@@ -215,18 +214,17 @@ const handleLogin = async () => {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #f1f5f9;
+    background: var(--input-bg);
     padding: 0 20px;
     height: 55px;
     border-radius: 18px;
-    border: 2px solid transparent;
+    border: 2px solid var(--border-color);
     transition: all 0.3s;
 }
 
 .input-wrapper.focused {
-    background: white;
+    background: var(--card-bg);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.1);
 }
 
 .input-wrapper.has-error {
@@ -234,7 +232,7 @@ const handleLogin = async () => {
 }
 
 .input-wrapper .icon {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
@@ -244,12 +242,13 @@ const handleLogin = async () => {
     border: none;
     font-size: 1rem;
     font-weight: 500;
+    color: var(--text-color);
     outline: none;
 }
 
 .eye-icon {
     cursor: pointer;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
@@ -279,8 +278,7 @@ const handleLogin = async () => {
 }
 
 .btn-auth:hover {
-    transform: none;
-    background-color: #166fe5; /* Slightly darker */
+    background-color: var(--primary-color);
 }
 
 .auth-footer {

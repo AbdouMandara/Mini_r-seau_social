@@ -216,7 +216,7 @@ onMounted(() => {
 }
 
 .file-upload-custom {
-  border: 2px dashed #dddfe2;
+  border: 2px dashed var(--border-color);
   border-radius: 8px;
   padding: 20px;
   cursor: pointer;
@@ -262,7 +262,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--input-bg);
   transition: .4s;
 }
 
@@ -273,7 +273,7 @@ onMounted(() => {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: var(--card-bg);
   transition: .4s;
 }
 

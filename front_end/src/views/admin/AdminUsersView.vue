@@ -178,10 +178,10 @@ onMounted(fetchUsers);
 
 <style scoped>
 .admin-users-view {
-    background: white;
+    background: var(--card-bg);
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid var(--border-color);
     height: 100%;
 }
 
@@ -191,13 +191,13 @@ onMounted(fetchUsers);
     align-items: flex-end;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .page-title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #1c1e21;
+    color: var(--text-color);
     margin-bottom: 4px;
 }
 
@@ -245,12 +245,12 @@ onMounted(fetchUsers);
 .custom-select {
     appearance: none;
     -webkit-appearance: none;
-    padding: 10px 40px 10px 40px; /* Space for icons */
+    padding: 10px 40px 10px 40px; 
     font-size: 0.9rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 12px;
-    background-color: #f9fafb;
-    color: #374151;
+    background-color: var(--input-bg);
+    color: var(--text-color);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -258,15 +258,13 @@ onMounted(fetchUsers);
 }
 
 .custom-select:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
+    background-color: var(--secondary-color);
 }
 
 .custom-select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1);
-    background-color: white;
+    background-color: var(--card-bg);
 }
 
 .users-table-container {
@@ -298,7 +296,7 @@ onMounted(fetchUsers);
 }
 
 .modern-table tbody tr:hover td {
-    background-color: #f8fafc;
+    background-color: var(--secondary-color);
 }
 /* Disable hover on mobile to match user preference "pas background gray" */
 @media (max-width: 768px) {
@@ -309,23 +307,24 @@ onMounted(fetchUsers);
 
 .modern-table td {
     padding: 16px 15px;
-    background: white;
+    background: var(--card-bg);
     vertical-align: middle;
-    border-top: 1px solid #f3f4f6;
-    border-bottom: 1px solid #f3f4f6;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     text-align: center;
+    color: var(--text-color);
 }
 
 .modern-table td:first-child {
     border-top-left-radius: 12px;
     border-bottom-left-radius: 12px;
-    border-left: 1px solid #f3f4f6;
+    border-left: 1px solid var(--border-color);
 }
 
 .modern-table td:last-child {
     border-top-right-radius: 12px;
     border-bottom-right-radius: 12px;
-    border-right: 1px solid #f3f4f6;
+    border-right: 1px solid var(--border-color);
 }
 
 .user-cell {
@@ -339,8 +338,7 @@ onMounted(fetchUsers);
     height: 42px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 2px solid var(--card-bg);
 }
 
 .user-info {
@@ -357,7 +355,7 @@ onMounted(fetchUsers);
 
 .name { 
     font-weight: 600; 
-    color: #1c1e21;
+    color: var(--text-color);
     font-size: 0.95rem;
 }
 
@@ -368,8 +366,8 @@ onMounted(fetchUsers);
 
 .stat-number {
     font-weight: 600;
-    color: #4b5563;
-    background: #f3f4f6;
+    color: var(--text-color);
+    background: var(--input-bg);
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -385,12 +383,12 @@ onMounted(fetchUsers);
     letter-spacing: 0.5px;
 }
 
-.status-badge.active { background: #dcfce7; color: #166534; }
-.status-badge.blocked { background: #fee2e2; color: #991b1b; }
+.status-badge.active { background: rgba(66, 183, 42, 0.1); color: #42b72a; }
+.status-badge.blocked { background: rgba(240, 40, 73, 0.1); color: #f02849; }
 
 .btn-icon {
     border: none;
-    background: #f9fafb;
+    background: var(--input-bg);
     padding: 8px;
     border-radius: 8px;
     cursor: pointer;
@@ -427,7 +425,7 @@ onMounted(fetchUsers);
 }
 
 .users-table-container::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+    background: var(--input-bg);
     border-radius: 4px;
 }
 
@@ -447,12 +445,12 @@ onMounted(fetchUsers);
     }
     
     .modern-table tr {
-        background: white;
+        background: var(--card-bg);
         margin-bottom: 15px;
         border-radius: 16px;
-        border: 1px solid #f0f2f5;
+        border: 1px solid var(--border-color);
         padding: 0;
-        overflow: hidden; /* For smooth expansion */
+        overflow: hidden; 
         transition: all 0.3s ease;
     }
 
@@ -461,7 +459,7 @@ onMounted(fetchUsers);
         border-bottom: none;
         padding: 15px;
         margin: 0;
-        background: white;
+        background: var(--card-bg);
         z-index: 2;
         position: relative;
     }
@@ -518,17 +516,17 @@ onMounted(fetchUsers);
     }
     
     .expand-btn {
-        background: #f3f4f6;
+        background: var(--input-bg);
         border: none;
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        display: flex; /* block in mobile-only generally, but ensures flex here */
+        display: flex; 
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: transform 0.3s;
-        color: var(--text-muted);
+        color: var(--text-color);
     }
 
     .modern-table tr.expanded .expand-btn {

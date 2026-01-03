@@ -550,8 +550,8 @@ const handleEditProfile = async () => {
             icon: 'success',
             timer: 1500,
             showConfirmButton: false,
-            background: '#fff',
-            color: '#1c1e21'
+            background: 'var(--card-bg)',
+            color: 'var(--text-color)'
         });
 
         // Update URL if name changed
@@ -662,9 +662,8 @@ watch(activeTab, (newTab) => {
   margin: 0 15px 25px;
   padding: 30px;
   border-radius: 30px;
-  background: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.02);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
 }
 
 .header-main-content {
@@ -687,7 +686,7 @@ watch(activeTab, (newTab) => {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid white;
+  border: 4px solid var(--card-bg);
 }
 
 .user-info-section {
@@ -703,7 +702,7 @@ watch(activeTab, (newTab) => {
 .display-name {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #1c1e21;
+  color: var(--text-color);
 }
 
 .verified-badge {
@@ -723,8 +722,8 @@ watch(activeTab, (newTab) => {
 }
 
 .btn-edit-modern {
-  background: #f0f2f5;
-  color: #1c1e21;
+  background: var(--input-bg);
+  color: var(--text-color);
   border-radius: 12px;
   padding: 10px 20px;
   font-size: 0.95rem;
@@ -738,9 +737,10 @@ watch(activeTab, (newTab) => {
 }
 
 .btn-icon-modern {
-  background: #f0f2f5;
+  background: var(--input-bg);
   padding: 10px;
   border-radius: 12px;
+  color: var(--text-color);
 }
 
 /* Metrics Section */
@@ -752,13 +752,14 @@ watch(activeTab, (newTab) => {
 
 .metric-card {
   flex: 1;
-  background: #f8f9fa;
+  background: var(--input-bg);
   padding: 15px;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s;
+  transition: all 0.2s;
+  color: var(--text-color);
 }
 
 /* .metric-card:hover { transform: translateY(-3px); } */
@@ -766,7 +767,7 @@ watch(activeTab, (newTab) => {
 .metric-value {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #1c1e21;
+  color: var(--text-color);
 }
 
 .metric-label {
@@ -777,7 +778,7 @@ watch(activeTab, (newTab) => {
 
 /* Bio Section */
 .profile-bio-new {
-  border-top: 1px solid #f0f2f5;
+  border-top: 1px solid var(--border-color);
   padding-top: 20px;
 }
 
@@ -800,12 +801,12 @@ watch(activeTab, (newTab) => {
 
 .bio-content {
   line-height: 1.6;
-  color: #4b4b4b;
+  color: var(--text-color);
 }
 
 .bio-content.placeholder {
   font-style: italic;
-  color: #b0b0b0;
+  color: var(--text-muted);
 }
 
 /* Tabs Navigation */
@@ -817,8 +818,8 @@ watch(activeTab, (newTab) => {
 
 .nav-tab {
   flex: 1;
-  background: white;
-  border: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   padding: 15px;
   border-radius: 15px;
   display: flex;
@@ -828,7 +829,6 @@ watch(activeTab, (newTab) => {
   font-weight: 700;
   color: var(--text-muted);
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
   transition: all 0.2s;
 }
 
@@ -891,35 +891,36 @@ watch(activeTab, (newTab) => {
   flex-shrink: 0;
 }
 
-.node-icon.like { background: #fee2e2; color: #ef4444; }
-.node-icon.comment { background: #dbeafe; color: #3b82f6; }
+.node-icon.like { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.node-icon.comment { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
 
 .node-content { flex: 1; }
 
 .node-text { font-size: 0.95rem; margin-bottom: 8px; }
 
 .comment-preview {
-  background: #f8f9fa;
+  background: var(--secondary-color);
   padding: 10px;
   border-radius: 10px;
   font-size: 0.9rem;
   margin-bottom: 12px;
   border-left: 3px solid #3b82f6;
+  color: var(--text-color);
 }
 
 .post-preview-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #f1f3f5;
+  background: var(--input-bg);
   padding: 10px;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   word-break: break-all;
 }
 
-.post-preview-card:hover { background: #e9ecef; }
+.post-preview-card:hover { background: var(--secondary-color); opacity: 0.8; }
 
 .preview-img {
   width: 40px;
@@ -970,27 +971,26 @@ watch(activeTab, (newTab) => {
 }
 
 .modal-card-modern {
-  background: white;
+  background: var(--card-bg);
   width: 100%;
   max-width: 500px;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-color);
   animation: slideUp 0.3s ease-out;
 }
 
 /* User List Modal Redesign */
 .user-list-modal {
     width: 100%;
-    max-width: 500px; /* Slightly wider */
-    height: 70vh;    /* Fixed height for better scrolling */
+    max-width: 500px; 
+    height: 70vh;    
     max-height: 700px;
     display: flex;
     flex-direction: column;
-    background: white;
-    border-radius: 24px; /* More rounded */
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    overflow: hidden; /* For header blur containment */
+    background: var(--card-bg);
+    border-radius: 24px;
+    overflow: hidden; 
 }
 
 .modal-header-modern {
@@ -998,13 +998,13 @@ watch(activeTab, (newTab) => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  margin-bottom: 0; /* Override previous margin */
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0;
 }
 
 .modal-header-modern h3 { 
@@ -1019,20 +1019,20 @@ watch(activeTab, (newTab) => {
     padding: 0;
     /* Smooth scrolling */
     scrollbar-width: thin;
-    scrollbar-color: #e4e6eb transparent;
+    scrollbar-color: var(--input-bg) transparent;
 }
 
 .user-list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px; /* More breathing room */
-    border-bottom: 1px solid #f0f2f5;
-    transition: background 0.2s ease;
+    padding: 16px 24px; 
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
 }
 
 .user-list-item:hover {
-    background: #fafafa; /* Subtle background change only */
+    background: var(--input-bg); /* Subtle background change only */
 }
 
 .user-info-group {
@@ -1098,12 +1098,12 @@ watch(activeTab, (newTab) => {
 }
 
 .btn-follow-action.following {
-    background: #e4e6eb;
-    color: #050505;
+    background: var(--secondary-color);
+    color: var(--text-color);
 }
 
 .btn-follow-action.following:hover {
-    background: #d8dadf;
+    background: var(--input-bg);
 }
 
 .empty-list {
@@ -1142,7 +1142,8 @@ watch(activeTab, (newTab) => {
 .modal-header-modern h3 { font-weight: 800; font-size: 1.4rem; }
 
 .close-btn-modern {
-  background: #f0f2f5;
+  background: var(--input-bg);
+  color: var(--text-color);
   width: 35px;
   height: 35px;
   border-radius: 50%;
@@ -1166,8 +1167,7 @@ watch(activeTab, (newTab) => {
   height: 100px;
   border-radius: 30px;
   object-fit: cover;
-  border: 3px solid white;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border: 3px solid var(--card-bg);
 }
 
 .camera-overlay {
@@ -1196,17 +1196,16 @@ watch(activeTab, (newTab) => {
 .input-wrapper {
   display: flex;
   align-items: center;
-  background: #f8f9fa;
-  border: 2px solid #f1f3f5;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
   border-radius: 15px;
   padding: 0 15px;
-  transition: all 0.2s;
+  transition: all 0.2;
 }
 
 .input-wrapper:focus-within {
   border-color: var(--primary-color);
-  background: white;
-  box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.1);
+  background: var(--card-bg);
 }
 
 .input-wrapper .icon { color: var(--text-muted); font-size: 20px; }
@@ -1237,12 +1236,13 @@ watch(activeTab, (newTab) => {
 
 .modern-form textarea {
   width: 100%;
-  background: #f8f9fa;
-  border: 2px solid #f1f3f5;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
   border-radius: 15px;
   padding: 15px;
   font-family: inherit;
   resize: none;
+  color: var(--text-color);
 }
 
 .form-footer {
@@ -1300,12 +1300,10 @@ watch(activeTab, (newTab) => {
 .btn-share.wa { 
     background: #25D366; 
     color: white; 
-    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
 }
 
 .btn-share.copy { 
-    background: #f0f2f5; 
-    color: #1c1e21; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    background: var(--input-bg); 
+    color: var(--text-color); 
 }
 </style>

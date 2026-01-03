@@ -178,7 +178,7 @@ onMounted(fetchComments);
 
 .drawer-header {
   padding: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -187,7 +187,7 @@ onMounted(fetchComments);
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  color: var(--text-color);
   cursor: pointer;
 }
 
@@ -219,7 +219,7 @@ onMounted(fetchComments);
 }
 
 .comment-text {
-  background: #f0f2f5;
+  background: var(--input-bg);
   padding: 10px 15px;
   border-radius: 18px;
   flex: 1;
@@ -255,8 +255,8 @@ onMounted(fetchComments);
 
 .drawer-footer {
   padding: 20px;
-  border-top: 1px solid #eee;
-  background: white;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-bg);
 }
 
 .comment-form {

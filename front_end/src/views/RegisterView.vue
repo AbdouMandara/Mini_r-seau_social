@@ -195,7 +195,7 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: var(--bg-color);
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -234,12 +234,11 @@ const handleRegister = async () => {
   width: 100%;
   max-width: 440px;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   border-radius: 30px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
   z-index: 1;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid var(--border-color);
 }
 
 .auth-header {
@@ -283,18 +282,17 @@ const handleRegister = async () => {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #f1f5f9;
+    background: var(--input-bg);
     padding: 0 20px;
     height: 52px;
     border-radius: 18px;
-    border: 2px solid transparent;
+    border: 2px solid var(--border-color);
     transition: all 0.3s;
 }
 
 .input-wrapper.focused {
-    background: white;
+    background: var(--card-bg);
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.1);
 }
 
 .input-wrapper.has-error {
@@ -302,7 +300,7 @@ const handleRegister = async () => {
 }
 
 .input-wrapper .icon {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
@@ -313,18 +311,18 @@ const handleRegister = async () => {
     font-size: 1rem;
     font-weight: 500;
     outline: none;
-    color: var(--text-main);
+    color: var(--text-color);
 }
 
 .eye-icon {
     cursor: pointer;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
 .file-upload-premium {
     height: 100px;
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--text-muted);
     border-radius: 18px;
     display: flex;
     align-items: center;
@@ -344,7 +342,7 @@ const handleRegister = async () => {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .preview-container {
@@ -402,8 +400,7 @@ const handleRegister = async () => {
 }
 
 .btn-auth:hover {
-    transform: none;
-    background-color: #166fe5;
+    background-color: var(--primary-color);
 }
 
 .auth-footer {

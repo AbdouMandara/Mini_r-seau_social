@@ -135,7 +135,7 @@ onUnmounted(() => {
 
 .sidebar-header h2 {
     font-size: 1.5rem;
-    color: #1c1e21;
+    color: var(--text-color);
     font-weight: 700;
     margin-bottom: 10px;
 }
@@ -147,18 +147,18 @@ onUnmounted(() => {
 }
 
 .stat-card {
-    background: white;
+    background: var(--card-bg);
     padding: 20px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     gap: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
 }
 
 .stat-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    opacity: 0.85;
 }
 
 
@@ -197,7 +197,7 @@ onUnmounted(() => {
 .stat-value {
     font-size: 1.4rem;
     font-weight: 800;
-    color: #1c1e21;
+    color: var(--text-color);
 }
 
 .dashboard-main {
