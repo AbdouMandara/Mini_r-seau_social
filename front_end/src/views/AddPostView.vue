@@ -128,12 +128,12 @@ const handleSubmit = async () => {
 
   try {
     if (isEditMode.value) {
-      // Update existing post
+      // Pour mettre à jour les données d'un post en  envoyant celà à l'api
       await api.post(`/posts/${postId.value}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
     } else {
-      // Create new post
+      // Pour ajouter un post en envoyant celà à l'api
       await api.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });

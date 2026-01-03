@@ -478,6 +478,7 @@ onMounted(() => {
          // Be careful with overlapping clicks
     });
 
+    authStore.fetchProfile();
     fetchNotifications();
     // Poll notifications every minute
     setInterval(fetchNotifications, 60000);

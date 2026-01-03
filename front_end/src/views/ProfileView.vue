@@ -541,7 +541,6 @@ const handleEditProfile = async () => {
 
         const oldNom = authStore.user.nom;
         authStore.user = res.data.user;
-        localStorage.setItem('user', JSON.stringify(res.data.user));
         user.value = res.data.user;
         isEditModalOpen.value = false;
 

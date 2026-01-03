@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -24,55 +25,53 @@ class AuthController extends Controller
 
         $user = User::create([
             'nom' => $request->nom,
-            'password' => Hash::make($request->password),
+            // ⚠️ En Laravel 12, le cast 'hashed' dans le modèle User hache déjà le mot de passe.
+            // Le hacher ici avec Hash::make() créerait un double-hachage invalide.
+            'password' => $request->password,
             'photo_profil' => $path,
             'region' => $request->region,
         ]);
 
-        // Populate remember_token for security/consistency
-        $user->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->save();
-
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
 
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            'message' => 'Inscription réussie',
             'user' => $user,
         ]);
     }
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'nom' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('nom', $request->nom)->first();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'nom' => ['Les identifiants sont incorrects.'],
+            return response()->json([
+                'message' => 'Connexion réussie',
+                'user' => Auth::user(),
             ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Populate remember_token for security/session persistence consistency (requested by user)
-        $user->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->save();
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
+        throw ValidationException::withMessages([
+            'nom' => ['Les identifiants sont incorrects.'],
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
 
-        return response()->json(['message' => 'Déconnexion réussie']);
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'message' => 'Déconnexion réussie'
+        ]);
     }
 
     public function profile(Request $request)
