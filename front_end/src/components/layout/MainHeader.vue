@@ -1,0 +1,591 @@
+<template>
+  <header class="main-header" v-if="!isBlockedPage">
+    <div class="header-content" :class="{ 'container': !isFullWidthPage }">
+      <h1 class="logo clickable" @click="goHome">!Pozterr</h1>
+      
+      <div v-if="authStore.isAuthenticated && authStore.user" class="header-actions">
+        <!-- Search Bar (Desktop Only) -->
+        <div v-if="!authStore.user.is_admin" class="search-container desktop-only">
+          <div class="search-input-wrapper">
+            <span class="material-symbols-rounded search-icon">search</span>
+            <input 
+              type="text" 
+              v-model="searchQuery" 
+              @input="handleSearch" 
+              @focus="showSearchOverlay = true"
+              class="search-input" 
+              placeholder="Rechercher un utilisateur..." 
+            />
+            <span v-if="searchQuery.length > 1" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
+          </div>
+
+          <Transition name="fade">
+            <div v-if="showSearchOverlay && (searchQuery.trim() !== '' || searching)" class="search-results-overlay card shadow-lg">
+              <div v-if="searching" class="loader-container">
+                <Loader />
+              </div>
+              <div v-else-if="searchResults.length === 0" class="no-results">
+                Aucun utilisateur trouvé
+              </div>
+              <div v-else class="results-list">
+                <div 
+                  v-for="user in searchResults" 
+                  :key="user.id" 
+                  class="search-result-item" 
+                  @click="navigateToUserProfile(user)"
+                >
+                  <img :src="getUserAvatar(user)" class="search-avatar" />
+                  <span class="search-username">{{ user.nom }}</span>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- Notification Bell (Desktop) -->
+        <div class="notif-btn desktop-only" @click="$emit('toggle-notifs')">
+          <span class="material-symbols-rounded">notifications</span>
+          <span v-if="unreadCount > 0" class="notif-badge"></span>
+        </div>
+
+        <!-- Mobile Hamburger -->
+        <div class="notif-btn mobile-only" @click="$emit('toggle-mobile-menu')">
+          <span class="material-symbols-rounded">menu</span>
+          <span v-if="unreadCount > 0" class="notif-badge"></span>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="desktop-nav">
+          <div class="user-menu-wrapper" v-if="authStore.isAuthenticated">
+            <div class="profile-link-container" @click="toggleUserMenu" :class="{ 'active': showUserMenu }">
+              <div class="avatar-with-name">
+                <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
+                <span class="user-name-header">{{ displayName }}</span>
+                <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
+              </div>
+            </div>
+
+            <Transition name="fade-slide">
+              <div v-if="showUserMenu" class="user-dropdown card shadow-lg">
+                <div class="dropdown-user-info">
+                  <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
+                  <div class="user-details">
+                    <span class="full-name" @click="goToProfile">{{ displayName }}</span>
+                    <span class="view-profile">Bienvenue 😊</span>
+                  </div>
+                  <div class="theme-toggle desktop-only" @click="themeStore.toggleTheme">
+                    <span class="material-symbols-rounded">{{ themeStore.isDark ? 'light_mode' : 'dark_mode' }}</span>
+                  </div>
+                </div>
+                
+                <div class="dropdown-divider"></div>
+
+                <!-- Admin Options -->
+                <template v-if="authStore.user.is_admin">
+                  <div v-if="route.name !== 'admin-dashboard'" class="dropdown-item" @click="navigateTo('/admin/dashboard')">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">dashboard</span>
+                    </div>
+                    <span>Dashboard</span>
+                  </div>
+                  <div v-if="route.name !== 'admin-feedbacks'" class="dropdown-item" @click="navigateTo('/admin/feedbacks')">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">feedback</span>
+                    </div>
+                    <span>Feedbacks</span>
+                  </div>
+                  <div v-if="route.name !== 'admin-activities'" class="dropdown-item" @click="navigateTo('/admin/activites')">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">history</span>
+                    </div>
+                    <span>Activités</span>
+                  </div>
+                </template>
+
+                <!-- User Options -->
+                <template v-else>
+                  <div v-if="route.name !== 'home'" class="dropdown-item" @click="goHome">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">home</span>
+                    </div>
+                    <span>Accueil</span>
+                  </div>
+                  <div v-if="route.name !== 'profile' && route.params.target_name === undefined" class="dropdown-item" @click="goToProfile">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">person</span>
+                    </div>
+                    <span>Mon Profil</span>
+                  </div>
+                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="navigateTo(`/${userSlug}/add_post`)">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">add_circle</span>
+                    </div>
+                    <span>Ajouter un post</span>
+                  </div>
+                  <div class="dropdown-item" @click="navigateTo(`/${userSlug}/feedback`)">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">info</span>
+                    </div>
+                    <span>Envoyer un feedback</span>
+                  </div>
+                </template>
+
+                <div class="dropdown-divider"></div>
+
+                <div class="dropdown-item logout-item" @click="$emit('logout')">
+                  <div class="item-icon-bg logout-icon">
+                    <span class="material-symbols-rounded">logout</span>
+                  </div>
+                  <span>Déconnexion</span>
+                </div>
+              </div>
+            </Transition>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
+import { useRouter, useRoute } from 'vue-router';
+import api, { BASE_URL } from '@/utils/api';
+import Loader from '@/components/Loader.vue';
+
+const props = defineProps({
+  unreadCount: { type: Number, default: 0 },
+  isBlockedPage: { type: Boolean, default: false },
+  isFullWidthPage: { type: Boolean, default: false }
+});
+
+const emit = defineEmits(['toggle-notifs', 'toggle-mobile-menu', 'logout']);
+
+const authStore = useAuthStore();
+const themeStore = useThemeStore();
+const router = useRouter();
+const route = useRoute();
+
+const showUserMenu = ref(false);
+const searchQuery = ref('');
+const searchResults = ref([]);
+const showSearchOverlay = ref(false);
+const searching = ref(false);
+let searchTimeout = null;
+
+const userSlug = computed(() => {
+  const name = authStore.user?.slug || authStore.user?.nom || '';
+  return name.replace(/ /g, '_');
+});
+const displayName = computed(() => {
+  const name = authStore.user?.nom || 'User';
+  return authStore.user?.is_admin && name.length > 5 ? name.substring(0, 5) : name;
+});
+
+const profileImageUrl = computed(() => {
+  if (authStore.user?.photo_profil) {
+    if (authStore.user.photo_profil.startsWith('http')) return authStore.user.photo_profil;
+    return `${BASE_URL}/storage/${authStore.user.photo_profil}`;
+  }
+  return 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
+});
+
+const getUserAvatar = (user) => {
+  if (user.photo_profil) {
+    if (user.photo_profil.startsWith('http')) return user.photo_profil;
+    return `${BASE_URL}/storage/${user.photo_profil}`;
+  }
+  return 'https://ui-avatars.com/api/?name=' + user.nom;
+};
+
+const handleImgError = (e) => {
+  e.target.src = 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
+};
+
+const handleSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  
+  if (searchQuery.value.trim() === '') {
+    searchResults.value = [];
+    return;
+  }
+  
+  searching.value = true;
+  showSearchOverlay.value = true;
+
+  searchTimeout = setTimeout(async () => {
+    try {
+      const res = await api.get(`/users/search?query=${encodeURIComponent(searchQuery.value)}`);
+      searchResults.value = res.data;
+    } catch (err) {
+      console.error('Search error', err);
+    } finally {
+      searching.value = false;
+    }
+  }, 300);
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  searchResults.value = [];
+  showSearchOverlay.value = false;
+};
+
+const navigateToUserProfile = (user) => {
+  const currentSlug = userSlug.value;
+  const targetSlug = (user.slug || user.nom).replace(/ /g, '_');
+  router.push(`/${currentSlug}/profil/${targetSlug}`);
+  showSearchOverlay.value = false;
+  searchQuery.value = '';
+  searchResults.value = [];
+};
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value;
+};
+
+const goHome = () => {
+  if (authStore.isAuthenticated) {
+    router.push(`/${userSlug.value}/home`);
+    showUserMenu.value = false;
+  } else {
+    router.push('/login');
+  }
+};
+
+const goToProfile = () => {
+  router.push(`/${userSlug.value}/profil`);
+  showUserMenu.value = false;
+};
+
+const navigateTo = (path) => {
+  router.push(path);
+  showUserMenu.value = false;
+};
+</script>
+
+<style scoped>
+/* Styles moved from App.vue */
+.main-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0.75em 0.25em;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.logo.clickable {
+  font-family: 'Irish Grover';
+  cursor: pointer;
+  color: var(--primary-color);
+  font-weight: 900;
+  font-size: 2.3rem;
+  letter-spacing: -1.5px;
+  user-select: none;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.search-container {
+  position: relative;
+  width: 300px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border-radius: 50px;
+  padding: 8px 15px;
+  height: 40px;
+  transition: background 0.2s;
+}
+
+.search-input-wrapper:focus-within {
+  background: var(--secondary-color);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  padding-right: 25px;
+}
+
+.clear-icon {
+  position: absolute;
+  right: 12px;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.clear-icon:hover {
+  background: rgba(0,0,0,0.1);
+  color: var(--text-color);
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.search-results-overlay {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.no-results {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-result-item:hover {
+  background: var(--secondary-color);
+}
+
+.search-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.search-username {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.desktop-nav {
+  display: none;
+  gap: 20px;
+  align-items: center;
+}
+
+.mini-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.notif-btn, .theme-toggle {
+  display: flex;
+  position: relative;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.notif-btn:hover, .theme-toggle:hover {
+  color: var(--primary-color);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: var(--error);
+  border: 2px solid var(--card-bg);
+  border-radius: 50%;
+}
+
+.user-menu-wrapper {
+  position: relative;
+}
+
+.profile-link-container {
+  cursor: pointer;
+}
+
+.avatar-with-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name-header {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.dropdown-arrow {
+  font-size: 20px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.profile-link-container.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 300px;
+  z-index: 1000;
+}
+
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dropdown-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-name {
+  font-weight: 600;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.full-name:hover {
+  text-decoration: underline;
+}
+
+.view-profile {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 12px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: var(--secondary-color);
+}
+
+.item-icon-bg {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-item {
+  color: var(--error);
+}
+
+.logout-icon {
+  background: rgba(240, 40, 73, 0.1);
+}
+
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+  .mobile-only {
+    display: none !important;
+  }
+  .desktop-only {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: all 0.2s;
+}
+
+.fade-slide-enter-from, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>

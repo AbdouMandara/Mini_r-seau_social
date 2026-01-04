@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Like;
 use App\Models\Post;
+use App\Events\LikeToggled;
 use Illuminate\Http\Request;
 
 class LikeController extends Controller
@@ -17,10 +17,15 @@ class LikeController extends Controller
 
         if ($like) {
             $like->delete();
+            $likesCount = $post->likes()->count();
+            
+            // Broadcast the event
+            broadcast(new LikeToggled($post->id_post, $likesCount, 'unliked'))->toOthers();
+            
             return response()->json([
                 'message' => 'Like supprimé',
                 'liked' => false,
-                'likes_count' => $post->likes()->count()
+                'likes_count' => $likesCount
             ]);
         }
 
@@ -40,10 +45,15 @@ class LikeController extends Controller
             ]);
         }
 
+        $likesCount = $post->likes()->count();
+        
+        // Broadcast the event
+        broadcast(new LikeToggled($post->id_post, $likesCount, 'liked'))->toOthers();
+
         return response()->json([
             'message' => 'Post liké',
             'liked' => true,
-            'likes_count' => $post->likes()->count()
+            'likes_count' => $likesCount
         ]);
     }
 }

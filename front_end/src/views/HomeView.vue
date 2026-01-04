@@ -107,7 +107,7 @@ const fetchPosts = async () => {
     if (filters.filiere) params.filiere = filters.filiere;
 
     const res = await api.get('/posts', { params });
-    posts.value = res.data;
+    posts.value = res.data.data || res.data;
     
     // Check for deep link
     if (route.params.post_id) {

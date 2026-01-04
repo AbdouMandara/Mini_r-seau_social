@@ -2,34 +2,23 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\User;
+use App\Models\Activity;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Activity;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'nom' => 'required|string|max:191|unique:users',
-            'password' => 'required|string|min:8',
-            'photo_profil' => 'required|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'etablissement' => 'required|string|max:191',
-            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
-            'niveau' => 'required|string|in:1,2',
-        ]);
-
         $path = $request->file('photo_profil')->store('images/profil_user', 'public');
 
         $user = User::create([
             'nom' => $request->nom,
-            // ⚠️ En Laravel 12, le cast 'hashed' dans le modèle User hache déjà le mot de passe.
-            // Le hacher ici avec Hash::make() créerait un double-hachage invalide.
             'password' => $request->password,
             'photo_profil' => $path,
             'etablissement' => $request->etablissement,
@@ -43,7 +32,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Inscription réussie',
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -59,7 +48,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Connexion réussie',
-                'user' => Auth::user(),
+                'user' => new UserResource(Auth::user()),
             ]);
         }
 
@@ -83,7 +72,7 @@ class AuthController extends Controller
 
     public function profile(Request $request)
     {
-        return response()->json($request->user());
+        return new UserResource($request->user());
     }
 
     public function getUserByNom(Request $request, $nom)
@@ -135,7 +124,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profil mis à jour avec succès',
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
     public function searchUsers(Request $request)

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Activity;
+use App\Http\Requests\PostRequest;
+use App\Http\Resources\PostResource;
+use App\Events\PostCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Activity;
 
 class PostController extends Controller
 {
@@ -22,21 +25,11 @@ class PostController extends Controller
             $query->where('filiere', $request->filiere);
         }
 
-        return $query->latest()->get();
+        return PostResource::collection($query->latest()->get());
     }
 
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
-        $request->validate([
-            'description' => 'required|string|max:100',
-            'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'allow_comments' => 'boolean',
-            'tag' => 'required|string|in:etude,divertissement,info,programmation,maths,devoir',
-            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
-            'niveau' => 'required|string|in:1,2',
-            'matiere' => 'nullable|string|max:191',
-        ]);
-
         $path = null;
         if ($request->hasFile('img_post')) {
             $path = $request->file('img_post')->store('images/post', 'public');
@@ -55,27 +48,20 @@ class PostController extends Controller
 
         Activity::log($request->user()->id, 'post', "A publié un nouveau post : " . substr($post->description, 0, 50) . "...");
 
+        // Broadcast the event
+        broadcast(new PostCreated($post))->toOthers();
+
         return response()->json([
             'message' => 'Post créé avec succès',
-            'post' => $post->load('user'),
+            'post' => new PostResource($post->load('user')),
         ], 201);
     }
 
-    public function update(Request $request, Post $post)
+    public function update(PostRequest $request, Post $post)
     {
         if ($post->id_user !== $request->user()->id) {
             return response()->json(['message' => 'Non autorisé'], 403);
         }
-
-        $request->validate([
-            'description' => 'required|string|max:100',
-            'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'allow_comments' => 'boolean',
-            'tag' => 'required|string|in:etude,divertissement,info,programmation,maths,devoir',
-            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
-            'niveau' => 'required|string|in:1,2',
-            'matiere' => 'nullable|string|max:191',
-        ]);
 
         if ($request->hasFile('img_post')) {
             if ($post->img_post) {
@@ -97,7 +83,7 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Post modifié avec succès',
-            'post' => $post->load('user'),
+            'post' => new PostResource($post->load('user')),
         ]);
     }
 
@@ -117,16 +103,18 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        return $post->load(['user', 'comments.user', 'likes']);
+        return new PostResource($post->load(['user', 'comments.user', 'likes']));
     }
 
     public function userPosts(Request $request, $userId = null)
     {
         $id = $userId ?: $request->user()->id;
-        return Post::with(['user', 'comments', 'likes'])
-            ->where('id_user', $id)
-            ->where('is_delete', false)
-            ->latest()
-            ->get();
+        return PostResource::collection(
+            Post::with(['user', 'comments', 'likes'])
+                ->where('id_user', $id)
+                ->where('is_delete', false)
+                ->latest()
+                ->get()
+        );
     }
 }

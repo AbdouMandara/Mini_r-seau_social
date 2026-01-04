@@ -20,7 +20,7 @@
           <div v-for="comment in comments" :key="comment.id_commentaire" class="comment-item">
             <img :src="getAvatar(comment.user)" class="comment-avatar" />
             <div class="comment-text">
-              <span class="comment-user">{{ comment.user.nom }}</span>
+              <span class="comment-user">{{ comment.user?.nom || 'Utilisateur' }}</span>
               <p class="comment-content" v-html="formatMentions(comment.contenu)"></p>
               <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
             </div>
@@ -92,7 +92,7 @@ const handleInput = async (e) => {
         if (query.length >= 2 && !query.includes(' ')) {
             try {
                 const res = await api.get(`/users/search?query=${query}`);
-                suggestions.value = res.data;
+                suggestions.value = res.data.data || res.data;
             } catch (err) {
                 console.error(err);
             }
@@ -143,7 +143,8 @@ const fetchComments = async () => {
   loading.value = true;
   try {
     const res = await api.get(`/posts/${props.postId}`);
-    comments.value = res.data.comments || [];
+    const postData = res.data.data || res.data;
+    comments.value = postData.comments || [];
   } catch (err) {
     console.error(err);
   } finally {
@@ -157,7 +158,8 @@ const addComment = async () => {
     const res = await api.post(`/posts/${props.postId}/comments`, {
       contenu: newComment.value
     });
-    comments.value.unshift(res.data.comment);
+    const commentData = res.data.comment?.data || res.data.comment;
+    comments.value.unshift(commentData);
     newComment.value = '';
     emit('comment-added');
   } catch (err) {
@@ -204,7 +206,7 @@ const deleteComment = async (comment) => {
 
 const isOwner = (comment) => authStore.user?.id === comment.id_user;
 const getAvatar = (user) => {
-  if (!user.photo_profil) return 'https://ui-avatars.com/api/?name=' + user.nom;
+  if (!user?.photo_profil) return 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
   return user.photo_profil.startsWith('http') ? user.photo_profil : `${BASE_URL}/storage/${user.photo_profil}`;
 };
 
@@ -212,6 +214,14 @@ const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 };
+
+watch(() => props.isOpen, (val) => {
+    if (val) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+});
 
 watch(() => props.postId, fetchComments);
 onMounted(fetchComments);
@@ -232,12 +242,19 @@ onMounted(fetchComments);
 
 .drawer-content {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   height: 100%;
   display: flex;
   flex-direction: column;
   border-radius: 0;
   padding: 0;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 991px) {
+    .drawer-content {
+        max-width: 400px;
+    }
 }
 
 @media (max-width: 767px) {
@@ -245,8 +262,9 @@ onMounted(fetchComments);
         align-items: flex-end;
     }
     .drawer-content {
-        height: 80%;
-        border-radius: 20px 20px 0 0;
+        max-width: 100%;
+        height: 85%;
+        border-radius: 25px 25px 0 0;
     }
 }
 

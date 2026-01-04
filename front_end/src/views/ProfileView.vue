@@ -444,7 +444,7 @@ const fetchUserPosts = async () => {
         isFollowing.value = user.value.is_following;
 
         const postsRes = await api.get(`/users/${user.value.id}/posts`);
-        posts.value = postsRes.data;
+        posts.value = postsRes.data.data || postsRes.data;
     } catch (err) {
         console.error('Fetch profile posts error', err);
         if (err.response?.status === 404) {
@@ -654,6 +654,15 @@ onMounted(async () => {
 watch(() => route.params.target_name, fetchUserPosts);
 watch(activeTab, (newTab) => {
   if (newTab === 'interactions') fetchInteractions();
+});
+
+// Watch modals to lock body scroll
+watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
+    if (editOpen || listOpen) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 });
 </script>
 
@@ -998,10 +1007,12 @@ watch(activeTab, (newTab) => {
   background: var(--card-bg);
   width: 100%;
   max-width: 500px;
+  max-height: 90vh;
   border-radius: 20px;
-  overflow: hidden;
+  overflow-y: auto;
   border: 1px solid var(--border-color);
   animation: slideUp 0.3s ease-out;
+  scrollbar-width: thin;
 }
 
 /* User List Modal Redesign */

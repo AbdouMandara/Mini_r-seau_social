@@ -158,13 +158,25 @@ onMounted(fetchActivities);
     padding: 15px 20px;
     font-size: 0.9rem;
     color: var(--text-muted);
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .activity-table td {
-    padding: 15px 20px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.95rem;
+    color: var(--text-color);
+    vertical-align: middle;
+}
+
+.activity-table tr {
+    transition: background 0.2s;
+}
+
+.activity-table tr:hover {
+    background: rgba(var(--primary-color-rgb, 24, 119, 242), 0.03);
 }
 
 .user-cell {

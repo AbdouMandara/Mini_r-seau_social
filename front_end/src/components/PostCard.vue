@@ -4,7 +4,7 @@
     <div class="post-header">
       <img :src="userAvatar" class="post-avatar" @error="handleAvatarError" />
       <div class="user-info">
-        <h3 class="author-name" @click="goToProfile">{{ post.user.nom }}</h3>
+        <h3 class="author-name" @click="goToProfile">{{ post.user?.data?.nom || post.user?.nom || 'Utilisateur inconnu' }}</h3>
         <p class="joined-date">Publié le {{ formatDate(post.created_at) }}</p>
       </div>
       <div v-if="shouldShowActions" class="post-actions">
@@ -75,8 +75,10 @@ const shouldShowActions = computed(() => isOwner.value && isOnProfile.value);
 
 const goToProfile = () => {
     // Navigate correctly based on current route or target
-    const targetNom = props.post.user?.nom;
-    router.push(`/${authStore.user?.nom}/profil/${targetNom}`);
+    const targetNom = props.post.user?.nom || '';
+    if (targetNom) {
+        router.push(`/${authStore.user?.nom}/profil/${targetNom}`);
+    }
 };
 
 // Sync local refs when props change (from parent refreshes)
@@ -87,13 +89,15 @@ watch(() => props.post, (newPost) => {
 }, { deep: true });
 
 const userAvatar = computed(() => {
-  const url = props.post.user?.photo_profil;
-  if (!url) return 'https://ui-avatars.com/api/?name=' + props.post.user?.nom;
+  const user = props.post.user?.data || props.post.user;
+  const url = user?.photo_profil;
+  if (!url) return 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
   return url.startsWith('http') ? url : `${BASE_URL}/storage/${url}`;
 });
 
 const handleAvatarError = (e) => {
-  e.target.src = 'https://ui-avatars.com/api/?name=' + props.post.user?.nom;
+  const user = props.post.user?.data || props.post.user;
+  e.target.src = 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
 };
 
 const postImageUrl = computed(() => {
@@ -133,9 +137,10 @@ const handleLike = async () => {
 };
 
 const handleShare = () => {
-    const profileUrl = `${window.location.origin}/${props.post.user.nom}/profil/${authStore.user?.nom}`;
+    const userNom = props.post.user?.nom || 'Utilisateur';
+    const profileUrl = `${window.location.origin}/${userNom}/profil/${authStore.user?.nom}`;
     const shareUrl = `${window.location.origin}/post/${props.post.id_post}`;
-    const message = `Regarde cette publication de ${props.post.user.nom} sur !pozterr : ${shareUrl}\n\nRetrouve aussi son profil ici : ${profileUrl}`;
+    const message = `Regarde cette publication de ${userNom} sur !pozterr : ${shareUrl}\n\nRetrouve aussi son profil ici : ${profileUrl}`;
     
     Swal.fire({
         title: 'Partager le post',

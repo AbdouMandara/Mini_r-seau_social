@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
 
                 const response = await api.post('/register', userData);
 
-                this.user = response.data.user;
+                this.user = response.data.user?.data || response.data.user;
                 localStorage.setItem('pozterr_logged_in', 'true');
                 return response.data;
 
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
 
                 const response = await api.post('/login', credentials);
 
-                this.user = response.data.user;
+                this.user = response.data.user?.data || response.data.user;
                 localStorage.setItem('pozterr_logged_in', 'true');
                 return response.data;
 
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', {
 
             try {
                 const response = await api.get('/user');
-                this.user = response.data;
+                this.user = response.data.data || response.data;
             } catch (err) {
                 this.user = null;
                 if (err.response?.status === 401) {

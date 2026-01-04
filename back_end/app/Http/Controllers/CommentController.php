@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Comment;
 use App\Models\Post;
+use App\Http\Requests\CommentRequest;
+use App\Http\Resources\CommentResource;
+use App\Events\CommentAdded;
+use App\Events\NotificationSent;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-    public function store(Request $request, Post $post)
+    public function store(CommentRequest $request, Post $post)
     {
         if (!$post->allow_comments) {
             return response()->json(['message' => 'Les commentaires sont désactivés pour ce post'], 403);
         }
-
-        $request->validate([
-            'contenu' => 'required|string',
-        ]);
 
         $comment = Comment::create([
             'id_user' => $request->user()->id,
@@ -45,9 +44,6 @@ class CommentController extends Controller
 
         // Créer une notification si ce n'est pas son propre post (de type 'comment')
         if ($post->id_user !== $request->user()->id) {
-            // On évite de notifier deux fois si le proprio est déjà mentionné? 
-            // D'habitude on notifie 'mention' en priorité ou les deux. 
-            // Ici on va faire simple : si pas déjà notifié pour mention sur ce post à cet instant.
             $alreadyNotified = \App\Models\Notification::where('id_user_target', $post->id_user)
                 ->where('id_user_author', $request->user()->id)
                 ->where('id_post', $post->id_post)
@@ -55,31 +51,33 @@ class CommentController extends Controller
                 ->exists();
 
             if (!$alreadyNotified) {
-                \App\Models\Notification::create([
+                $notification = \App\Models\Notification::create([
                     'id_user_target' => $post->id_user,
                     'id_user_author' => $request->user()->id,
                     'id_post' => $post->id_post,
                     'type' => 'comment'
                 ]);
+                
+                // Broadcast notification
+                broadcast(new NotificationSent($notification))->toOthers();
             }
         }
 
+        // Broadcast comment added
+        broadcast(new CommentAdded($comment))->toOthers();
+
         return response()->json([
             'message' => 'Commentaire ajouté',
-            'comment' => $comment->load('user'),
+            'comment' => new CommentResource($comment->load('user')),
             'comments_count' => $post->comments()->count()
         ], 201);
     }
 
-    public function update(Request $request, Comment $comment)
+    public function update(CommentRequest $request, Comment $comment)
     {
         if ($comment->id_user !== $request->user()->id) {
             return response()->json(['message' => 'Non autorisé'], 403);
         }
-
-        $request->validate([
-            'contenu' => 'required|string',
-        ]);
 
         $comment->update([
             'contenu' => $request->contenu,
@@ -87,7 +85,7 @@ class CommentController extends Controller
 
         return response()->json([
             'message' => 'Commentaire modifié',
-            'comment' => $comment->load('user'),
+            'comment' => new CommentResource($comment->load('user')),
         ]);
     }
 
