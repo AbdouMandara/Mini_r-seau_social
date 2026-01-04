@@ -144,3 +144,33 @@ button, a, input, textarea {
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) var(--bg-color);
 }
+
+/* Mobile Refinements */
+@media (max-width: 480px) {
+  :root {
+    font-size: 14px; /* Global reduction */
+  }
+  
+  .card {
+    padding: 15px;
+  }
+  
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .input-control {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+.padd-inline {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.flex-1 {
+    flex: 1;
+}

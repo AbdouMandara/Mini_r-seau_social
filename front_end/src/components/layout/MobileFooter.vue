@@ -113,6 +113,23 @@ const handleImgError = (e) => {
   object-fit: cover;
 }
 
+@media (max-width: 480px) {
+  .mobile-footer {
+    height: 56px;
+  }
+  .plus-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .mini-avatar-container {
+    width: 32px;
+    height: 32px;
+  }
+  .material-symbols-rounded {
+    font-size: 20px;
+  }
+}
+
 @media (min-width: 768px) {
   .mobile-footer {
     display: none !important;

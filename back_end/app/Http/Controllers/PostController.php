@@ -25,6 +25,12 @@ class PostController extends Controller
             $query->where('filiere', $request->filiere);
         }
 
+        if ($request->has('etablissement') && $request->etablissement !== '') {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('etablissement', 'LIKE', "%{$request->etablissement}%");
+            });
+        }
+
         return PostResource::collection($query->latest()->get());
     }
 

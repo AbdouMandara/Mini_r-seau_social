@@ -42,6 +42,11 @@
           </Transition>
         </div>
 
+        <!-- Mobile Search Toggle -->
+        <div v-if="!authStore.user.is_admin" class="notif-btn mobile-only" @click="showMobileSearch = true">
+          <span class="material-symbols-rounded">search</span>
+        </div>
+
         <!-- Notification Bell (Desktop) -->
         <div class="notif-btn desktop-only" @click="$emit('toggle-notifs')">
           <span class="material-symbols-rounded">notifications</span>
@@ -53,6 +58,51 @@
           <span class="material-symbols-rounded">menu</span>
           <span v-if="unreadCount > 0" class="notif-badge"></span>
         </div>
+
+        <!-- Mobile Search Overlay -->
+        <Transition name="fade">
+          <div v-if="showMobileSearch" class="mobile-search-overlay">
+            <div class="mobile-search-header padd-inline">
+              <button class="icon-btn" @click="closeMobileSearch">
+                <span class="material-symbols-rounded">arrow_back</span>
+              </button>
+              <div class="search-input-wrapper flex-1">
+                <input 
+                  type="text" 
+                  v-model="searchQuery" 
+                  @input="handleSearch" 
+                  class="search-input" 
+                  placeholder="Rechercher un utilisateur..." 
+                  autoFocus
+                />
+                <span v-if="searchQuery.length > 0" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
+              </div>
+            </div>
+            
+            <div class="search-results-content">
+              <div v-if="searching" class="loader-container">
+                <Loader />
+              </div>
+              <div v-else-if="searchQuery.trim() !== '' && searchResults.length === 0" class="no-results">
+                Aucun utilisateur trouvé
+              </div>
+              <div v-else class="results-list">
+                <div 
+                  v-for="user in searchResults" 
+                  :key="user.id" 
+                  class="search-result-item" 
+                  @click="navigateToUserProfile(user)"
+                >
+                  <img :src="getUserAvatar(user)" class="search-avatar" />
+                  <div class="search-info">
+                    <span class="search-username">{{ user.nom }}</span>
+                    <span class="search-email">{{ user.etablissement || 'Étudiant' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
 
         <!-- Desktop Navigation -->
         <nav class="desktop-nav">
@@ -172,6 +222,7 @@ const showUserMenu = ref(false);
 const searchQuery = ref('');
 const searchResults = ref([]);
 const showSearchOverlay = ref(false);
+const showMobileSearch = ref(false);
 const searching = ref(false);
 let searchTimeout = null;
 
@@ -213,7 +264,9 @@ const handleSearch = () => {
   }
   
   searching.value = true;
-  showSearchOverlay.value = true;
+  if (!showMobileSearch.value) {
+    showSearchOverlay.value = true;
+  }
 
   searchTimeout = setTimeout(async () => {
     try {
@@ -233,13 +286,9 @@ const clearSearch = () => {
   showSearchOverlay.value = false;
 };
 
-const navigateToUserProfile = (user) => {
-  const currentSlug = userSlug.value;
-  const targetSlug = (user.slug || user.nom).replace(/ /g, '_');
-  router.push(`/${currentSlug}/profil/${targetSlug}`);
-  showSearchOverlay.value = false;
-  searchQuery.value = '';
-  searchResults.value = [];
+const closeMobileSearch = () => {
+  showMobileSearch.value = false;
+  clearSearch();
 };
 
 const toggleUserMenu = () => {
@@ -247,17 +296,21 @@ const toggleUserMenu = () => {
 };
 
 const goHome = () => {
-  if (authStore.isAuthenticated) {
     router.push(`/${userSlug.value}/home`);
     showUserMenu.value = false;
-  } else {
-    router.push('/login');
-  }
 };
 
 const goToProfile = () => {
   router.push(`/${userSlug.value}/profil`);
   showUserMenu.value = false;
+};
+
+const navigateToUserProfile = (user) => {
+  showSearchOverlay.value = false;
+  showMobileSearch.value = false;
+  const targetSlug = (user.slug || user.nom).replace(/ /g, '_');
+  router.push(`/${authStore.user?.nom}/profil/${targetSlug}`);
+  clearSearch();
 };
 
 const navigateTo = (path) => {
@@ -297,6 +350,13 @@ const navigateTo = (path) => {
   user-select: none;
 }
 
+@media (max-width: 480px) {
+  .logo.clickable {
+    font-size: 1.8rem;
+    letter-spacing: -1px;
+  }
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -317,6 +377,7 @@ const navigateTo = (path) => {
   padding: 8px 15px;
   height: 40px;
   transition: background 0.2s;
+  width: 100%;
 }
 
 .search-input-wrapper:focus-within {
@@ -587,5 +648,62 @@ const navigateTo = (path) => {
 .fade-slide-enter-from, .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Mobile Search Overlay */
+.mobile-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-color);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-search-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 15px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+.search-results-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.search-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+
+.search-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
 }
 </style>

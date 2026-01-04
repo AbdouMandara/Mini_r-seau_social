@@ -6,33 +6,46 @@
     
     <div v-else class="feed-container">
       <div class="filter-bar card">
-        <div class="filter-group">
-          <span class="material-symbols-rounded">filter_list</span>
-          <select v-model="filters.tag" @change="fetchPosts">
-            <option value="">Tous les tags</option>
-            <option value="etude">Étude</option>
-            <option value="divertissement">Divertissement</option>
-            <option value="info">Information</option>
-            <option value="programmation">Programmation</option>
-            <option value="maths">Mathématiques</option>
-            <option value="devoir">Devoir</option>
-          </select>
+        <div class="filter-scroll-container">
+          <div class="filter-group">
+            <span class="material-symbols-rounded">filter_list</span>
+            <select v-model="filters.tag" @change="fetchPosts">
+              <option value="">Tous les tags</option>
+              <option value="etude">Étude</option>
+              <option value="divertissement">Divertissement</option>
+              <option value="info">Information</option>
+              <option value="programmation">Programmation</option>
+              <option value="maths">Mathématiques</option>
+              <option value="devoir">Devoir</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <span class="material-symbols-rounded">category</span>
+            <select v-model="filters.filiere" @change="fetchPosts">
+              <option value="">Toutes les filières</option>
+              <option value="GL">GL</option>
+              <option value="GLT">GLT</option>
+              <option value="SWE">SWE</option>
+              <option value="MVC">MVC</option>
+              <option value="LTM">LTM</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <span class="material-symbols-rounded">school</span>
+            <input 
+              type="text" 
+              v-model="filters.etablissement" 
+              placeholder="Établissement..." 
+              @input="handleEtablissementSearch"
+              class="filter-input"
+            />
+          </div>
         </div>
 
-        <div class="filter-group">
-          <span class="material-symbols-rounded">category</span>
-          <select v-model="filters.filiere" @change="fetchPosts">
-            <option value="">Toutes les filières</option>
-            <option value="GL">GL</option>
-            <option value="GLT">GLT</option>
-            <option value="SWE">SWE</option>
-            <option value="MVC">MVC</option>
-            <option value="LTM">LTM</option>
-          </select>
-        </div>
-
-        <button v-if="filters.tag || filters.filiere" class="btn-reset" @click="resetFilters">
-          Réinitialiser
+        <button v-if="filters.tag || filters.filiere || filters.etablissement" class="btn-reset" @click="resetFilters">
+          <span class="material-symbols-rounded">restart_alt</span>
         </button>
       </div>
 
@@ -86,8 +99,17 @@ const activePostId = ref(null);
 
 const filters = reactive({
   tag: '',
-  filiere: ''
+  filiere: '',
+  etablissement: ''
 });
+
+let etablissementTimeout = null;
+const handleEtablissementSearch = () => {
+    if (etablissementTimeout) clearTimeout(etablissementTimeout);
+    etablissementTimeout = setTimeout(() => {
+        fetchPosts();
+    }, 500);
+};
 
 const openComments = (post) => {
   activePostId.value = post.id_post;
@@ -97,6 +119,7 @@ const openComments = (post) => {
 const resetFilters = () => {
   filters.tag = '';
   filters.filiere = '';
+  filters.etablissement = '';
   fetchPosts();
 };
 
@@ -105,6 +128,7 @@ const fetchPosts = async () => {
     const params = {};
     if (filters.tag) params.tag = filters.tag;
     if (filters.filiere) params.filiere = filters.filiere;
+    if (filters.etablissement) params.etablissement = filters.etablissement;
 
     const res = await api.get('/posts', { params });
     posts.value = res.data.data || res.data;
@@ -181,13 +205,27 @@ onUnmounted(() => {
 
 .filter-bar {
     max-width: 600px;
-    margin: 0 auto 20px;
-    padding: 15px 20px;
+    margin: 0 10px 20px;
+    padding: 10px 15px;
     display: flex;
-    gap: 20px;
+    gap: 10px;
     align-items: center;
     background: var(--card-bg);
-    border-radius: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.filter-scroll-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    flex: 1;
+    padding: 5px 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-scroll-container::-webkit-scrollbar {
+    display: none;
 }
 
 .filter-group {
@@ -195,25 +233,48 @@ onUnmounted(() => {
     align-items: center;
     gap: 8px;
     color: var(--text-muted);
+    white-space: nowrap;
+    background: var(--input-bg);
+    padding: 6px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
 }
 
-.filter-group select {
+.filter-group select, .filter-input {
     border: none;
     background: none;
     font-weight: 600;
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.filter-input {
+    width: 100px;
 }
 
 .btn-reset {
-    background: none;
+    background: var(--input-bg);
     border: none;
-    color: var(--primary-color);
-    font-weight: 700;
-    font-size: 0.85rem;
+    color: var(--error);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     cursor: pointer;
-    margin-left: auto;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .filter-bar {
+        margin: 0 auto 20px;
+    }
+    .filter-input {
+        width: 150px;
+    }
 }
 
 .posts-feed {

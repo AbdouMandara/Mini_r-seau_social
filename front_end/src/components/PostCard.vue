@@ -396,4 +396,44 @@ const editPost = () => {
 .delete-btn {
   color: var(--error);
 }
+
+@media (max-width: 480px) {
+  .post-card {
+    margin-bottom: 12px;
+    border-radius: 12px;
+  }
+  
+  .post-header {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .post-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .user-info h3 {
+    font-size: 0.9rem;
+  }
+  
+  .post-description {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+  
+  .action-btn {
+    padding: 6px;
+    font-size: 0.85rem;
+  }
+  
+  .count {
+    font-size: 0.75rem;
+  }
+
+  .tag-badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+}
 </style>
