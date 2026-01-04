@@ -2,6 +2,7 @@
 
 :root {
   --primary-color: #1877f2;
+  --primary-rgb: 24, 119, 242;
   --secondary-color: #f0f2f5;
   --bg-color: #f0f2f5;
   --card-bg: #ffffff;
@@ -10,7 +11,9 @@
   --text-muted: #65676b;
   --white: #ffffff;
   --error: #f02849;
+  --error-rgb: 240, 40, 73;
   --success: #42b72a;
+  --success-rgb: 66, 183, 42;
   --border-color: rgba(0, 0, 0, 0.1);
   --radius-sm: 8px;
   --radius-md: 16px;
@@ -173,4 +176,22 @@ button, a, input, textarea {
 
 .flex-1 {
     flex: 1;
+}
+
+/* Visibility Utilities */
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: block !important;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block !important;
+    }
+    .desktop-only {
+        display: none !important;
+    }
 }

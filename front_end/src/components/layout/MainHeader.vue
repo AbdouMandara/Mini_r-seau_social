@@ -619,18 +619,6 @@ const navigateTo = (path) => {
   .desktop-nav {
     display: flex;
   }
-  .mobile-only {
-    display: none !important;
-  }
-  .desktop-only {
-    display: flex !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .desktop-only {
-    display: none !important;
-  }
 }
 
 .fade-enter-active, .fade-leave-active {

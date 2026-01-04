@@ -34,7 +34,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in sortedUsers" :key="user.id" :class="{'expanded': expandedUserId === user.id}">
+          <tr 
+            v-for="user in sortedUsers" 
+            :key="user.id" 
+            :class="{'expanded': expandedUserId === user.id}"
+            @click="isMobile && toggleDetails(user.id)"
+          >
             <td>
               <div class="user-cell">
                 <div class="user-info-group">
@@ -81,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import Swal from 'sweetalert2';
 
@@ -89,6 +94,11 @@ const users = ref([]);
 const expandedUserId = ref(null);
 const loading = ref(true);
 const selectedFilter = ref('default');
+const isMobile = ref(window.innerWidth <= 768);
+
+const handleResize = () => {
+    isMobile.value = window.innerWidth <= 768;
+};
 
 const toggleDetails = (id) => {
     expandedUserId.value = expandedUserId.value === id ? null : id;
@@ -173,7 +183,14 @@ const toggleBlock = async (user) => {
     }
 };
 
-onMounted(fetchUsers);
+onMounted(() => {
+    fetchUsers();
+    window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <style scoped>
@@ -300,7 +317,7 @@ onMounted(fetchUsers);
 /* Disable hover on mobile to match user preference "pas background gray" */
 @media (max-width: 768px) {
     .modern-table tbody tr:hover td {
-        background-color: white;
+        background-color: var(--card-bg);
     }
 }
 
@@ -382,8 +399,8 @@ onMounted(fetchUsers);
     letter-spacing: 0.5px;
 }
 
-.status-badge.active { background: rgba(66, 183, 42, 0.1); color: #42b72a; }
-.status-badge.blocked { background: rgba(240, 40, 73, 0.1); color: #f02849; }
+.status-badge.active { background: rgba(var(--success-rgb, 66, 183, 42), 0.1); color: var(--success); }
+.status-badge.blocked { background: rgba(var(--error-rgb, 240, 40, 73), 0.1); color: var(--error); }
 
 .btn-icon {
     border: none;
@@ -399,13 +416,13 @@ onMounted(fetchUsers);
 }
 
 .btn-block:hover { 
-    background: #fee2e2; 
-    color: #dc2626; 
+    background: rgba(var(--error-rgb, 240, 40, 73), 0.15); 
+    color: var(--error); 
 }
 
 .btn-unblock:hover { 
-    background: #d1fae5; 
-    color: #059669; 
+    background: rgba(var(--success-rgb, 66, 183, 42), 0.15); 
+    color: var(--success); 
 }
 
 .empty-state {
@@ -476,10 +493,10 @@ onMounted(fetchUsers);
     
     /* Expanded State */
     .modern-table tr.expanded td:not(:first-child) {
-        max-height: 60px; /* Adjust based on content */
+        max-height: 80px; /* Adjust based on content */
         opacity: 1;
         padding: 10px 15px;
-        border-top: 1px solid #f9fafb;
+        border-top: 1px solid var(--border-color);
     }
 
      /* Specific adjustments for Actions cell to fit content */
