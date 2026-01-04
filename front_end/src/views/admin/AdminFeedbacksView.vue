@@ -40,7 +40,7 @@
             </div>
             <div class="rating-badge" :class="getRatingClass(feedback.rating)">
                 <span class="material-symbols-rounded star-icon">star</span>
-                <span>{{ feedback.rating }}.0</span>
+                <span>{{ feedback.rating }}</span>
             </div>
         </div>
         

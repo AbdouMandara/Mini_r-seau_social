@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Activity;
 
 class AuthController extends Controller
 {
@@ -18,7 +19,9 @@ class AuthController extends Controller
             'nom' => 'required|string|max:191|unique:users',
             'password' => 'required|string|min:8',
             'photo_profil' => 'required|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'region' => 'required|string',
+            'etablissement' => 'required|string|max:191',
+            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
+            'niveau' => 'required|string|in:1,2',
         ]);
 
         $path = $request->file('photo_profil')->store('images/profil_user', 'public');
@@ -29,10 +32,14 @@ class AuthController extends Controller
             // Le hacher ici avec Hash::make() créerait un double-hachage invalide.
             'password' => $request->password,
             'photo_profil' => $path,
-            'region' => $request->region,
+            'etablissement' => $request->etablissement,
+            'filiere' => $request->filiere,
+            'niveau' => $request->niveau,
         ]);
 
         Auth::login($user);
+
+        Activity::log($user->id, 'inscription', "S'est inscrit sur la plateforme");
 
         return response()->json([
             'message' => 'Inscription réussie',
@@ -103,13 +110,17 @@ class AuthController extends Controller
         $request->validate([
             'nom' => 'required|string|max:191|unique:users,nom,' . $user->id,
             'photo_profil' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'region' => 'required|string',
-            'description' => 'nullable|string',
+            'etablissement' => 'required|string|max:191',
+            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
+            'niveau' => 'required|string|in:1,2',
+            'bio' => 'nullable|string',
         ]);
 
         $user->nom = $request->nom;
-        $user->region = $request->region;
-        $user->description = $request->description;
+        $user->etablissement = $request->etablissement;
+        $user->filiere = $request->filiere;
+        $user->niveau = $request->niveau;
+        $user->bio = $request->bio;
 
         if ($request->hasFile('photo_profil')) {
             // Delete old photo if exists

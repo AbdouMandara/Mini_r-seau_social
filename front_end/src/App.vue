@@ -49,11 +49,6 @@
              </Transition>
           </div>
 
-          <!-- Notification Bell (Desktop) -->
-          <div class="theme-toggle desktop-only" @click="themeStore.toggleTheme">
-            <span class="material-symbols-rounded">{{ themeStore.isDark ? 'light_mode' : 'dark_mode' }}</span>
-          </div>
-
           <div class="notif-btn desktop-only" @click="toggleNotifs">
             <span class="material-symbols-rounded">notifications</span>
             <span v-if="unreadCount > 0" class="notif-badge"></span>
@@ -80,12 +75,17 @@
               <Transition name="fade-slide">
                 <div v-if="showUserMenu" class="user-dropdown card shadow-lg">
                   <!-- User Header inside Dropdown -->
-                  <div class="dropdown-user-info" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">
+                  <div class="dropdown-user-info" >
                     <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
                     <div class="user-details">
-                      <span class="full-name">{{ authStore.user.is_admin ? (authStore.user.nom.length > 5 ? authStore.user.nom.substring(0, 5) : authStore.user.nom) : authStore.user.nom }}</span>
+                      <span class="full-name" @click="router.push(`/${(authStore.user.slug || authStore.user.nom).replace(/ /g, '_')}/profil`); showUserMenu = false">{{ authStore.user.is_admin ? (authStore.user.nom.length > 5 ? authStore.user.nom.substring(0, 5) : authStore.user.nom) : authStore.user.nom }}</span>
                       <span class="view-profile">Bienvenue 😊</span>
                     </div>
+                    <!-- Où on va mettre le soleil -->
+                               <!-- Notification Bell (Desktop) -->
+                      <div class="theme-toggle desktop-only" @click="themeStore.toggleTheme">
+                        <span class="material-symbols-rounded">{{ themeStore.isDark ? 'light_mode' : 'dark_mode' }}</span>
+                      </div>
                   </div>
                   
                   <div class="dropdown-divider"></div>
@@ -106,6 +106,13 @@
                         <span class="material-symbols-rounded">feedback</span>
                         </div>
                         <span>Feedbacks</span>
+                    </div>
+                    <!-- Bouton qui mène à la route 'activités' -->
+                    <div v-if="route.name !== 'admin-activities'" class="dropdown-item" @click="router.push('/admin/activites'); showUserMenu = false">
+                        <div class="item-icon-bg">
+                        <span class="material-symbols-rounded">history</span>
+                        </div>
+                        <span>Activités</span>
                     </div>
                   </template>
 
@@ -213,6 +220,12 @@
                         <div class="label-with-icon">
                             <span class="material-symbols-rounded">feedback</span>
                             Feedbacks
+                        </div>
+                    </div>
+                    <div v-if="route.name !== 'admin-activities'" class="menu-item-mobile" @click="router.push('/admin/activites'); showMobileMenu = false">
+                        <div class="label-with-icon">
+                            <span class="material-symbols-rounded">history</span>
+                            Activités
                         </div>
                     </div>
                 </template>
@@ -514,7 +527,7 @@ onMounted(() => {
   height: 60px;
   display: flex;
   align-items: center;
-  padding : 0.75em;
+  padding : 0.75em 0.25em;
 }
 
 .header-content {
@@ -945,12 +958,8 @@ onMounted(() => {
   gap: 12px;
   padding: 12px;
   border-radius: 12px;
-  cursor: pointer;
+  /*cursor: pointer;*/
   transition: background 0.2s;
-}
-
-.dropdown-user-info:hover {
-  background: var(--secondary-color);
 }
 
 .dropdown-avatar {
@@ -968,7 +977,7 @@ onMounted(() => {
 .full-name {
   font-weight: 700;
   color: var(--text-color);
-  font-size: 1rem;
+  font-size: 1.025rem;
 }
 
 .view-profile {

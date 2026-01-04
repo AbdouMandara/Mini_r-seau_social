@@ -44,6 +44,50 @@
           </div>
         </div>
 
+        <div class="input-group">
+          <label>Matière (optionnelle)</label>
+          <input 
+            v-model="form.matiere" 
+            type="text" 
+            class="input-control" 
+            placeholder="Ex: Architecture des ordinateurs"
+          >
+        </div>
+
+        <div class="input-grid">
+          <div class="input-group">
+            <label>Tag</label>
+            <select v-model="form.tag" class="input-control" required>
+              <option value="" disabled>Choisir un tag</option>
+              <option value="etude">Étude</option>
+              <option value="divertissement">Divertissement</option>
+              <option value="info">Information</option>
+              <option value="programmation">Programmation</option>
+              <option value="maths">Mathématiques</option>
+              <option value="devoir">Devoir</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Filière</label>
+            <select v-model="form.filiere" class="input-control" required>
+              <option value="GL">GL</option>
+              <option value="GLT">GLT</option>
+              <option value="SWE">SWE</option>
+              <option value="MVC">MVC</option>
+              <option value="LTM">LTM</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Niveau</label>
+            <select v-model="form.niveau" class="input-control" required>
+              <option value="1">Niveau 1</option>
+              <option value="2">Niveau 2</option>
+            </select>
+          </div>
+        </div>
+
         <div class="input-group toggle-group">
           <label>Autoriser les commentaires</label>
           <label class="switch">
@@ -80,7 +124,11 @@ const postId = computed(() => route.params.postId);
 const form = reactive({
   description: '',
   img_post: null,
-  allow_comments: true
+  allow_comments: true,
+  tag: '',
+  filiere: authStore.user?.filiere || 'GL',
+  niveau: authStore.user?.niveau || '1',
+  matiere: ''
 });
 
 const handleFileChange = (e) => {
@@ -102,6 +150,10 @@ const loadPostData = async () => {
     
     form.description = post.description || '';
     form.allow_comments = post.allow_comments;
+    form.tag = post.tag || '';
+    form.filiere = post.filiere || '';
+    form.niveau = post.niveau || '';
+    form.matiere = post.matiere || '';
     
     if (post.img_post) {
       previewUrl.value = post.img_post.startsWith('http') 
@@ -121,6 +173,11 @@ const handleSubmit = async () => {
   
   const formData = new FormData();
   formData.append('description', form.description);
+  formData.append('tag', form.tag);
+  formData.append('filiere', form.filiere);
+  formData.append('niveau', form.niveau);
+  formData.append('matiere', form.matiere || '');
+
   if (form.img_post instanceof File) {
     formData.append('img_post', form.img_post);
   }
@@ -187,6 +244,7 @@ onMounted(() => {
     font-weight: 600;
     transition: color 0.2s;
     border : none;
+    background: none;
 }
 
 .back-link:hover {
@@ -202,6 +260,13 @@ onMounted(() => {
 .text-area {
   min-height: 100px;
   resize: none;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .char-count {

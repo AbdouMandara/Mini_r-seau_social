@@ -285,7 +285,6 @@ onMounted(fetchUsers);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    
     &:first-child{
         text-align: left;
     }

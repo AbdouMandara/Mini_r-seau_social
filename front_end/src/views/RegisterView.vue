@@ -50,18 +50,50 @@
         </div>
 
         <div class="input-block">
-          <div class="input-wrapper" :class="{ 'focused': focusedField === 'region' }">
-            <span class="material-symbols-rounded icon">location_on</span>
-            <select 
-              v-model="form.region" 
-              @focus="focusedField = 'region'"
+          <div class="input-wrapper" :class="{ 'focused': focusedField === 'etablissement' }">
+            <span class="material-symbols-rounded icon">school</span>
+            <input 
+              v-model="form.etablissement" 
+              type="text" 
+              placeholder="Établissement"
+              @focus="focusedField = 'etablissement'"
               @blur="focusedField = null"
               required
             >
-              <option value="" disabled>Votre région</option>
-              <option v-for="region in regions" :key="region" :value="region">
-                {{ region }}
-              </option>
+          </div>
+        </div>
+
+        <div class="input-block">
+          <div class="input-wrapper" :class="{ 'focused': focusedField === 'filiere' }">
+            <span class="material-symbols-rounded icon">category</span>
+            <select 
+              v-model="form.filiere" 
+              @focus="focusedField = 'filiere'"
+              @blur="focusedField = null"
+              required
+            >
+              <option value="" disabled>Filière</option>
+              <option value="GL">Génie Logiciel (GL)</option>
+              <option value="GLT">Génie Logiciel et Télécom (GLT)</option>
+              <option value="SWE">Software Engineering (SWE)</option>
+              <option value="MVC">Marketing Vente et Communication (MVC)</option>
+              <option value="LTM">Logistique et Transport Maritime (LTM)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-block">
+          <div class="input-wrapper" :class="{ 'focused': focusedField === 'niveau' }">
+            <span class="material-symbols-rounded icon">star</span>
+            <select 
+              v-model="form.niveau" 
+              @focus="focusedField = 'niveau'"
+              @blur="focusedField = null"
+              required
+            >
+              <option value="" disabled>Niveau</option>
+              <option value="1">Niveau 1</option>
+              <option value="2">Niveau 2</option>
             </select>
           </div>
         </div>
@@ -122,14 +154,11 @@ const showPassword = ref(false);
 const form = reactive({
   nom: '',
   password: '',
-  region: '',
+  etablissement: '',
+  filiere: '',
+  niveau: '',
   photo_profil: null
 });
-
-const regions = [
-  'Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral', 
-  'Nord', 'Nord-Ouest', 'Ouest', 'Sud', 'Sud-Ouest'
-];
 
 const validateInput = (field) => {
   if (field === 'nom') {
@@ -170,7 +199,9 @@ const handleRegister = async () => {
   const formData = new FormData();
   formData.append('nom', form.nom);
   formData.append('password', form.password);
-  formData.append('region', form.region);
+  formData.append('etablissement', form.etablissement);
+  formData.append('filiere', form.filiere);
+  formData.append('niveau', form.niveau);
   formData.append('photo_profil', form.photo_profil);
 
   try {

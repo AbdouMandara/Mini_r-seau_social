@@ -5,15 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Activity;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Post::with(['user', 'comments', 'likes'])
-            ->where('is_delete', false)
-            ->latest()
-            ->get();
+        $query = Post::with(['user', 'comments.user', 'likes'])
+            ->where('is_delete', false);
+
+        if ($request->has('tag')) {
+            $query->where('tag', $request->tag);
+        }
+
+        if ($request->has('filiere')) {
+            $query->where('filiere', $request->filiere);
+        }
+
+        return $query->latest()->get();
     }
 
     public function store(Request $request)
@@ -22,6 +31,10 @@ class PostController extends Controller
             'description' => 'required|string|max:100',
             'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
             'allow_comments' => 'boolean',
+            'tag' => 'required|string|in:etude,divertissement,info,programmation,maths,devoir',
+            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
+            'niveau' => 'required|string|in:1,2',
+            'matiere' => 'nullable|string|max:191',
         ]);
 
         $path = null;
@@ -34,7 +47,13 @@ class PostController extends Controller
             'img_post' => $path,
             'id_user' => $request->user()->id,
             'allow_comments' => $request->get('allow_comments', true),
+            'tag' => $request->tag,
+            'filiere' => $request->filiere,
+            'niveau' => $request->niveau,
+            'matiere' => $request->matiere,
         ]);
+
+        Activity::log($request->user()->id, 'post', "A publié un nouveau post : " . substr($post->description, 0, 50) . "...");
 
         return response()->json([
             'message' => 'Post créé avec succès',
@@ -52,6 +71,10 @@ class PostController extends Controller
             'description' => 'required|string|max:100',
             'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
             'allow_comments' => 'boolean',
+            'tag' => 'required|string|in:etude,divertissement,info,programmation,maths,devoir',
+            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
+            'niveau' => 'required|string|in:1,2',
+            'matiere' => 'nullable|string|max:191',
         ]);
 
         if ($request->hasFile('img_post')) {
@@ -62,6 +85,11 @@ class PostController extends Controller
         }
 
         $post->description = $request->description;
+        $post->tag = $request->tag;
+        $post->filiere = $request->filiere;
+        $post->niveau = $request->niveau;
+        $post->matiere = $request->matiere;
+
         if ($request->has('allow_comments')) {
             $post->allow_comments = filter_var($request->allow_comments, FILTER_VALIDATE_BOOLEAN);
         }
@@ -81,6 +109,8 @@ class PostController extends Controller
 
         $post->is_delete = true;
         $post->save();
+
+        Activity::log($request->user()->id, 'post', "A supprimé un post : " . substr($post->description, 0, 50) . "...");
 
         return response()->json(['message' => 'Post supprimé avec succès']);
     }

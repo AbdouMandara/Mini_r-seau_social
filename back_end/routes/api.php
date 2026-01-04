@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'getDashboardStats']);
         Route::get('/users', [AdminController::class, 'getUsers']);
         Route::get('/feedbacks', [AdminController::class, 'getFeedbacks']);
+        Route::get('/activities', [\App\Http\Controllers\ActivityController::class, 'index']);
         Route::post('/users/{user}/toggle-block', [AdminController::class, 'toggleBlock']);
     });
 });

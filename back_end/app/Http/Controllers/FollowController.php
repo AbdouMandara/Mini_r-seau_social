@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Activity;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,15 @@ class FollowController extends Controller
             // Check if it's a "follow back" (is the user already following the follower?)
             $isFollowBack = $user->isFollowing($follower);
             $type = $isFollowBack ? 'follow_back' : 'follow';
+
+            // Create Follow record
+            $follow = Follow::create([
+                'id_user_follower' => $request->user()->id,
+                'id_user_followed' => $user->id,
+            ]);
+
+            // Log Activity
+            Activity::log($request->user()->id, 'follow', "A commencé à suivre " . $user->nom);
 
             // Create Notification
             Notification::create([

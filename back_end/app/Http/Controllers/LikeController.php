@@ -29,7 +29,8 @@ class LikeController extends Controller
             'id_post' => $post->id_post,
         ]);
 
-        // Créer une notification si ce n'est pas son propre post
+        \App\Models\Activity::log($request->user()->id, 'like', "A liké un post de " . $post->user->nom);
+        // Create notification
         if ($post->id_user !== $request->user()->id) {
             \App\Models\Notification::create([
                 'id_user_target' => $post->id_user,

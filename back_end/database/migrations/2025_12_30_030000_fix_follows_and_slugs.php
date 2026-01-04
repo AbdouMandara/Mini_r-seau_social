@@ -13,16 +13,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Fix Follows Table: Drop 'id' column if it exists, as pivot tables don't need it and it causes UUID errors on attach()
+        // 1. Fix Follows Table: Not needed here because 030001 recreates it.
+        // Dropping 'id' in SQLite causes errors if it's a primary key.
+        /*
         if (Schema::hasColumn('follows', 'id')) {
             Schema::table('follows', function (Blueprint $table) {
-                // We cannot easily drop a primary key column if constraints exist, 
-                // but commonly for UUID primary keys in simple migrations just dropping column might work 
-                // or we need to drop PK first.
-                // Simpler approach for dev: Recreate table without ID.
                 $table->dropColumn('id');
             });
         }
+        */
 
         // 2. Backfill Slugs
         $users = User::whereNull('slug')->get();

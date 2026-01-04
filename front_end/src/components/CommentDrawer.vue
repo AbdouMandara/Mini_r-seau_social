@@ -11,7 +11,7 @@
           <Loader />
         </div>
         
-        <div v-else class="comments-list">
+        <div v-else class="comments-list" @click="handleMentionClick">
           <div v-if="comments.length === 0" class="empty-comments">
             <span class="icon">💬</span>
             <p>Aucun commentaire pour l'instant. Soyez le premier !</p>
@@ -21,7 +21,7 @@
             <img :src="getAvatar(comment.user)" class="comment-avatar" />
             <div class="comment-text">
               <span class="comment-user">{{ comment.user.nom }}</span>
-              <p class="comment-content">{{ comment.contenu }}</p>
+              <p class="comment-content" v-html="formatMentions(comment.contenu)"></p>
               <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
             </div>
             <button v-if="isOwner(comment)" @click="deleteComment(comment)" class="delete-btn">🗑️</button>
@@ -30,12 +30,27 @@
       </div>
 
       <div class="drawer-footer">
+        <!-- Mentions Suggestions -->
+        <div v-if="suggestions.length > 0" class="mentions-suggestions">
+          <div 
+            v-for="user in suggestions" 
+            :key="user.id" 
+            class="suggestion-item"
+            @click="insertMention(user)"
+          >
+            <img :src="getAvatar(user)" class="suggestion-avatar" />
+            <span class="suggestion-name">{{ user.nom }}</span>
+          </div>
+        </div>
+
         <form @submit.prevent="addComment" class="comment-form">
           <input 
             v-model="newComment" 
             type="text" 
             class="input-control" 
-            placeholder="Ajouter un commentaire..."
+            placeholder="Ajouter un commentaire (utilisez @ pour mentionner)"
+            @input="handleInput"
+            @keydown.esc="suggestions = []"
             required
           >
           <button type="submit" class="btn btn-primary" :disabled="submitting">
@@ -49,8 +64,9 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import api from '@/utils/api';
+import api, { BASE_URL } from '@/utils/api';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 import Loader from '@/components/Loader.vue';
 import Swal from 'sweetalert2';
 
@@ -62,6 +78,65 @@ const comments = ref([]);
 const loading = ref(false);
 const submitting = ref(false);
 const newComment = ref('');
+const suggestions = ref([]);
+const router = useRouter();
+
+const handleInput = async (e) => {
+    const text = newComment.value;
+    const cursor = e.target.selectionStart;
+    const textAroundCursor = text.slice(0, cursor);
+    const lastAtIdx = textAroundCursor.lastIndexOf('@');
+
+    if (lastAtIdx !== -1) {
+        const query = textAroundCursor.slice(lastAtIdx + 1);
+        if (query.length >= 2 && !query.includes(' ')) {
+            try {
+                const res = await api.get(`/users/search?query=${query}`);
+                suggestions.value = res.data;
+            } catch (err) {
+                console.error(err);
+            }
+        } else {
+            suggestions.value = [];
+        }
+    } else {
+        suggestions.value = [];
+    }
+};
+
+const insertMention = (user) => {
+    const text = newComment.value;
+    const lastAtIdx = text.lastIndexOf('@');
+    const beforeAt = text.slice(0, lastAtIdx);
+    const afterAt = text.slice(lastAtIdx);
+    // Find where the mention query ends (first space or end of string)
+    const nextSpace = afterAt.indexOf(' ');
+    const remainingText = nextSpace === -1 ? '' : afterAt.slice(nextSpace);
+    
+    newComment.value = `${beforeAt}@${user.nom} ${remainingText}`;
+    suggestions.value = [];
+};
+
+const formatMentions = (text) => {
+    if (!text) return '';
+    // XSS Protection: Escape HTML tags first
+    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    
+    // Replace @Mention with clickable span
+    // We match @ followed by word characters or spaces, but we stop at punctuation or non-name chars.
+    // The user wants "@Name" in blue, and what follows in white.
+    return escaped.replace(/@([a-zA-Z0-9_\u00C0-\u017F]+(?:\s[a-zA-Z0-9_\u00C0-\u017F]+)*)/g, (match, name) => {
+        return `<span class="mention" data-name="${name}">@${name}</span>`;
+    });
+};
+
+const handleMentionClick = (e) => {
+    if (e.target.classList.contains('mention')) {
+        const name = e.target.getAttribute('data-name');
+        router.push(`/${authStore.user.nom}/profil/${name.replace(/ /g, '_')}`);
+        emit('close');
+    }
+};
 
 const fetchComments = async () => {
   if (!props.postId) return;
@@ -128,10 +203,9 @@ const deleteComment = async (comment) => {
 };
 
 const isOwner = (comment) => authStore.user?.id === comment.id_user;
-
 const getAvatar = (user) => {
-  if (!user.photo_profil) return 'https://via.placeholder.com/32';
-  return user.photo_profil.startsWith('http') ? user.photo_profil : `http://localhost:8000/storage/${user.photo_profil}`;
+  if (!user.photo_profil) return 'https://ui-avatars.com/api/?name=' + user.nom;
+  return user.photo_profil.startsWith('http') ? user.photo_profil : `${BASE_URL}/storage/${user.photo_profil}`;
 };
 
 const formatDate = (dateStr) => {
@@ -274,5 +348,53 @@ onMounted(fetchComments);
 
 .delete-btn:hover {
     opacity: 1;
+}
+
+/* Mentions Styles */
+:deep(.mention) {
+    color: var(--primary-color);
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+:deep(.mention:hover) {
+    text-decoration: underline;
+}
+
+.mentions-suggestions {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+    background: var(--input-bg);
+}
+
+.suggestion-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.suggestion-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
 }
 </style>

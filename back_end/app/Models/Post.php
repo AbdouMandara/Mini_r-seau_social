@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Post extends Model
 {
-    use HasUuids;
+    use HasUuids, HasFactory;
 
     protected $primaryKey = 'id_post';
     public $incrementing = false;
@@ -16,6 +17,10 @@ class Post extends Model
     protected $fillable = [
         'img_post',
         'description',
+        'tag',
+        'filiere',
+        'niveau',
+        'matiere',
         'is_delete',
         'id_user',
         'allow_comments',

@@ -1,0 +1,84 @@
+Fais moi un réseau social étudiant utile, pas Instagram-bis.
+👉 Priorité : entraide, organisation, réussite académique.
+
+## 👤 Profil étudiant (simplifié)
+Retire région et ajoutes
+Nb modifies la table users pour qu'elle prenne en compte les champs suivants
+Et ajoutes
+* Établissement
+* Filière (GL, GLT, SWE, MVC, LTM)
+ *niveau c'est un enum (1, 2)
+* Photo (optionnelle)
+* Bio courte
+👉 Utile pour identifier rapidement **qui parle**.
+
+---
+
+## 📝 Publications utiles (cœur du produit)
+
+Pas de posts inutiles.
+
+* Publication texte
+* Image optionnelle
+* Tags :
+
+  * #cours
+  * #examen
+  * #td
+  * #annonce
+* Modification / suppression
+* Feed filtrable par tags
+
+---
+
+## 💬 Commentaires (entraide)
+
+
+* Réponses courtes
+* Mention @
+
+👉 L’entraide se fait ici.
+
+---
+
+## ❤️ Likes (mais limités)
+
+* Like simple
+* Pas de compteurs visibles en priorité
+
+
+---
+
+## 🔍 Recherche intelligente
+
+* Par filière
+* Par matière
+* Par tag
+* Par mot-clé
+
+👉 Gain de temps énorme.
+
+---
+
+# 2️⃣ Fonctionnalités SOCIALES (à doser)
+
+* Feed basé sur :
+
+  * filière
+  * abonnements
+
+👉 Simple = meilleure UX.
+
+---
+
+# 3️⃣ ADMIN & MODÉRATION (indispensable)
+
+* Supprimer un post
+* Bloquer un utilisateur
+* Signalement simple
+* Dashboard stats basiques
+
+👉 Protège la plateforme.
+
+---
+

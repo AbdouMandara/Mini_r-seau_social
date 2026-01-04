@@ -1,5 +1,5 @@
 <template>
-  <div class="post-card card">
+  <div class="post-card card" @mouseenter="showCounts = true" @mouseleave="showCounts = false">
     <!-- Header -->
     <div class="post-header">
       <img :src="userAvatar" class="post-avatar" @error="handleAvatarError" />
@@ -18,6 +18,12 @@
 
     <!-- Body -->
     <div class="post-content">
+      <div class="post-tags">
+        <span class="tag-badge" :class="post.tag">#{{ post.tag }}</span>
+        <span class="info-badge">{{ post.filiere }} | Niv. {{ post.niveau }}</span>
+        <span v-if="post.matiere" class="matiere-badge">📚 {{ post.matiere }}</span>
+      </div>
+      
       <div v-if="post.img_post" class="post-image-container">
         <img :src="postImageUrl" class="post-image" />
       </div>
@@ -28,12 +34,12 @@
     <div class="post-footer">
       <button class="action-btn" :class="{ 'liked': isLiked }" @click="handleLike">
         <span class="material-symbols-rounded icon">{{ isLiked ? 'favorite' : 'favorite' }}</span>
-        <span class="count">{{ likesCount }}</span>
+        <span class="count visible">{{ likesCount }}</span>
       </button>
 
       <button class="action-btn" :disabled="!post.allow_comments" @click="$emit('open-comments', post)">
         <span class="material-symbols-rounded icon">chat_bubble</span>
-        <span class="count">{{ commentsCount }}</span>
+        <span class="count visible">{{ commentsCount }}</span>
       </button>
 
       <button class="action-btn" @click="handleShare">
@@ -58,6 +64,7 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const showMenu = ref(false);
+const showCounts = ref(false);
 const isLiked = ref(props.post.likes?.some(l => l.id_user === authStore.user?.id));
 const likesCount = ref(props.post.likes?.length || 0);
 const commentsCount = ref(props.post.comments?.length || 0);
@@ -278,6 +285,56 @@ const editPost = () => {
 
 .action-btn:hover:not(:disabled) {
   background: var(--secondary-color);
+}
+
+.count {
+    opacity: 1;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* Post Tags Styles */
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.tag-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--input-bg);
+    color: var(--primary-color);
+}
+
+.tag-badge.etude { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.tag-badge.divertissement { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+.tag-badge.info { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.tag-badge.programmation { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.tag-badge.maths { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.tag-badge.devoir { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.info-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--secondary-color);
+    color: var(--text-muted);
+}
+
+.matiere-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
 }
 
 .action-btn.liked .material-symbols-rounded {

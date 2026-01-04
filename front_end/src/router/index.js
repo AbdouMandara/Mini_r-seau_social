@@ -68,6 +68,12 @@ const router = createRouter({
         component: () => import('@/views/admin/AdminFeedbacksView.vue'),
         meta: { auth: true, admin: true }
     },
+    {
+        path: '/admin/activites',
+        name: 'admin-activities',
+        component: () => import('@/views/admin/AdminActivityView.vue'),
+        meta: { auth: true, admin: true }
+    },
     // Blocked Route
     {
       path: '/user_bloque',
@@ -98,15 +104,15 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  const token = authStore.token;
-
   // Restore session if needed
-  if (token && !authStore.user) {
+  const hasLoggedInFlag = localStorage.getItem('pozterr_logged_in') === 'true';
+  if (hasLoggedInFlag && !authStore.user) {
     try {
         await authStore.fetchProfile();
     } catch (error) {
-        // Token likely invalid
-        authStore.clearAuth();
+        // Token likely invalid or session expired
+        authStore.user = null;
+        localStorage.removeItem('pozterr_logged_in');
         next('/login');
         return;
     }

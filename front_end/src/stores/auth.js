@@ -13,7 +13,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     actions: {
-
         async register(userData) {
             this.loading = true;
             this.error = null;

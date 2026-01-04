@@ -66,17 +66,21 @@
         </div>
 
         <div class="profile-bio-new">
-          <div class="bio-meta">
+          <div class="bio-meta-grid">
             <span class="meta-item">
-              <span class="material-symbols-rounded">location_on</span>
-              {{ user.region || 'Terre' }}
+              <span class="material-symbols-rounded">school</span>
+              {{ user.etablissement || 'Étudiant' }}
+            </span>
+            <span class="meta-item">
+              <span class="material-symbols-rounded">category</span>
+              {{ user.filiere }} (Niv. {{ user.niveau }})
             </span>
             <span class="meta-item">
               <span class="material-symbols-rounded">calendar_today</span>
               Depuis {{ new Date(user.created_at).getFullYear() }}
             </span>
           </div>
-          <p v-if="user.description" class="bio-content">{{ user.description }}</p>
+          <p v-if="user.bio" class="bio-content">{{ user.bio }}</p>
           <p v-else-if="isMyProfile" class="bio-content placeholder">Ajoutez une bio pour vous présenter au monde...</p>
         </div>
       </div>
@@ -241,28 +245,41 @@
               </div>
               
               <div class="modern-input-group">
-                <label>Région (Cameroun)</label>
+                <label>Établissement</label>
                 <div class="input-wrapper">
-                  <span class="material-symbols-rounded icon">location_on</span>
-                  <select v-model="editForm.region" class="modern-select" required>
-                    <option value="" disabled>Sélectionnez votre région</option>
-                    <option value="Adamaoua">Adamaoua</option>
-                    <option value="Centre">Centre</option>
-                    <option value="Est">Est</option>
-                    <option value="Extrême-Nord">Extrême-Nord</option>
-                    <option value="Littoral">Littoral</option>
-                    <option value="Nord">Nord</option>
-                    <option value="Nord-Ouest">Nord-Ouest</option>
-                    <option value="Ouest">Ouest</option>
-                    <option value="Sud">Sud</option>
-                    <option value="Sud-Ouest">Sud-Ouest</option>
+                  <span class="material-symbols-rounded icon">school</span>
+                  <input v-model="editForm.etablissement" placeholder="Ex: Université de Yaoundé I" required>
+                </div>
+              </div>
+
+              <div class="modern-input-group">
+                <label>Filière</label>
+                <div class="input-wrapper">
+                  <span class="material-symbols-rounded icon">category</span>
+                  <select v-model="editForm.filiere" class="modern-select" required>
+                    <option value="GL">GL</option>
+                    <option value="GLT">GLT</option>
+                    <option value="SWE">SWE</option>
+                    <option value="MVC">MVC</option>
+                    <option value="LTM">LTM</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="modern-input-group">
+                <label>Niveau</label>
+                <div class="input-wrapper">
+                  <span class="material-symbols-rounded icon">star</span>
+                  <select v-model="editForm.niveau" class="modern-select" required>
+                    <option value="1">Niveau 1</option>
+                    <option value="2">Niveau 2</option>
                   </select>
                 </div>
               </div>
               
               <div class="modern-input-group full-width">
                 <label>Bio</label>
-                <textarea v-model="editForm.description" placeholder="Dites-en plus sur vous..." rows="3"></textarea>
+                <textarea v-model="editForm.bio" placeholder="Dites-en plus sur vous..." rows="3"></textarea>
               </div>
             </div>
             
@@ -314,8 +331,10 @@ const editLoading = ref(false);
 const editPreviewUrl = ref(null);
 const editForm = reactive({
     nom: '',
-    region: '',
-    description: '',
+    etablissement: '',
+    filiere: '',
+    niveau: '',
+    bio: '',
     photo: null
 });
 
@@ -509,8 +528,10 @@ const fetchInteractions = async () => {
 
 const openEditModal = () => {
     editForm.nom = user.value.nom;
-    editForm.region = user.value.region || '';
-    editForm.description = user.value.description || '';
+    editForm.etablissement = user.value.etablissement || '';
+    editForm.filiere = user.value.filiere || 'GL';
+    editForm.niveau = user.value.niveau || '1';
+    editForm.bio = user.value.bio || '';
     editForm.photo = null;
     editPreviewUrl.value = null;
     isEditModalOpen.value = true;
@@ -529,8 +550,10 @@ const handleEditProfile = async () => {
     try {
         const formData = new FormData();
         formData.append('nom', editForm.nom);
-        formData.append('region', editForm.region);
-        formData.append('description', editForm.description);
+        formData.append('etablissement', editForm.etablissement);
+        formData.append('filiere', editForm.filiere);
+        formData.append('niveau', editForm.niveau);
+        formData.append('bio', editForm.bio);
         if (editForm.photo) {
             formData.append('photo_profil', editForm.photo);
         }
@@ -782,10 +805,11 @@ watch(activeTab, (newTab) => {
   padding-top: 20px;
 }
 
-.bio-meta {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
+.bio-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .meta-item {

@@ -5,11 +5,42 @@
     </div>
     
     <div v-else class="feed-container">
+      <div class="filter-bar card">
+        <div class="filter-group">
+          <span class="material-symbols-rounded">filter_list</span>
+          <select v-model="filters.tag" @change="fetchPosts">
+            <option value="">Tous les tags</option>
+            <option value="etude">Étude</option>
+            <option value="divertissement">Divertissement</option>
+            <option value="info">Information</option>
+            <option value="programmation">Programmation</option>
+            <option value="maths">Mathématiques</option>
+            <option value="devoir">Devoir</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <span class="material-symbols-rounded">category</span>
+          <select v-model="filters.filiere" @change="fetchPosts">
+            <option value="">Toutes les filières</option>
+            <option value="GL">GL</option>
+            <option value="GLT">GLT</option>
+            <option value="SWE">SWE</option>
+            <option value="MVC">MVC</option>
+            <option value="LTM">LTM</option>
+          </select>
+        </div>
+
+        <button v-if="filters.tag || filters.filiere" class="btn-reset" @click="resetFilters">
+          Réinitialiser
+        </button>
+      </div>
+
       <div v-if="posts.length === 0" class="empty-state card">
         <div class="empty-icon">📭</div>
-        <p>Aucun post pour le moment. Soyez le premier à poster !</p>
-        <button class="btn btn-primary" @click="router.push(`/${authStore.user.nom}/add_post`)">
-          Créer un post
+        <p>Aucun post ne correspond à vos critères.</p>
+        <button class="btn btn-primary" @click="resetFilters">
+          Voir tout
         </button>
       </div>
 
@@ -35,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import api from '@/utils/api';
@@ -53,14 +84,29 @@ const isDesktop = ref(window.innerWidth >= 768);
 const isDrawerOpen = ref(false);
 const activePostId = ref(null);
 
+const filters = reactive({
+  tag: '',
+  filiere: ''
+});
+
 const openComments = (post) => {
   activePostId.value = post.id_post;
   isDrawerOpen.value = true;
 };
 
+const resetFilters = () => {
+  filters.tag = '';
+  filters.filiere = '';
+  fetchPosts();
+};
+
 const fetchPosts = async () => {
   try {
-    const res = await api.get('/posts');
+    const params = {};
+    if (filters.tag) params.tag = filters.tag;
+    if (filters.filiere) params.filiere = filters.filiere;
+
+    const res = await api.get('/posts', { params });
     posts.value = res.data;
     
     // Check for deep link
@@ -131,6 +177,43 @@ onUnmounted(() => {
 .empty-icon {
     font-size: 4rem;
     margin-bottom: 20px;
+}
+
+.filter-bar {
+    max-width: 600px;
+    margin: 0 auto 20px;
+    padding: 15px 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: 15px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+}
+
+.filter-group select {
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-reset {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: auto;
 }
 
 .posts-feed {
