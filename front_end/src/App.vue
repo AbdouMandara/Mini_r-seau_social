@@ -41,6 +41,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useThemeStore } from '@/stores/theme';
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import api from '@/utils/api';
 import Swal from 'sweetalert2';
 import MainHeader from '@/components/layout/MainHeader.vue';
@@ -50,6 +51,7 @@ import MobileFooter from '@/components/layout/MobileFooter.vue';
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
+const router = useRouter();
 const route = useRoute();
 
 const showNotifs = ref(false);
@@ -98,6 +100,8 @@ const handleLogout = async () => {
       showConfirmButton: false
     });
   }
+   router.push('/login');
+    return;
 };
 
 const fetchNotifications = async () => {

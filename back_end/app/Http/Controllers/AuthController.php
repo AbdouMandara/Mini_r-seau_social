@@ -19,6 +19,8 @@ class AuthController extends Controller
 
         $user = User::create([
             'nom' => $request->nom,
+            // ⚠️ En Laravel 12, le cast 'hashed' dans le modèle User hache déjà le mot de passe.
+            // Le hacher ici avec Hash::make() créerait un double-hachage invalide.
             'password' => $request->password,
             'photo_profil' => $path,
             'etablissement' => $request->etablissement,

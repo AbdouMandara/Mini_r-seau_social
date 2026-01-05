@@ -52,6 +52,7 @@
       <div v-if="posts.length === 0" class="empty-state card">
         <div class="empty-icon">📭</div>
         <p>Aucun post ne correspond à vos critères.</p>
+        <br>
         <button class="btn btn-primary" @click="resetFilters">
           Voir tout
         </button>
