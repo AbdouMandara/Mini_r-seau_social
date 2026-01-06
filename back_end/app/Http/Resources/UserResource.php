@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'is_blocked' => $this->is_blocked,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'badges' => $this->badges,
         ];
     }
 }

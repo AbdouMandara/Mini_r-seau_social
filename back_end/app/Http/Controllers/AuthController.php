@@ -45,12 +45,33 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        \Log::info('Login attempt', ['nom' => $credentials['nom']]);
+        
+        $user = User::where('nom', $credentials['nom'])->first();
+        
+        if (!$user) {
+            \Log::warning('Login failed: User not found', ['nom' => $credentials['nom']]);
+        } else {
+            $passwordOk = \Hash::check($credentials['password'], $user->password);
+            \Log::info('Login debug', [
+                'user_found' => true,
+                'password_check' => $passwordOk,
+                'is_admin' => $user->is_admin,
+                'is_blocked' => $user->is_blocked
+            ]);
+        }
+
         if (Auth::attempt($credentials)) {
+            // Retrieve authenticated user. If null (unexpected), fallback to the manually queried user.
+            $authUser = Auth::user() ?? $user;
+            
+            \Log::info('Login success', ['nom' => $credentials['nom'], 'id' => $authUser->id]);
             $request->session()->regenerate();
 
             return response()->json([
                 'message' => 'Connexion réussie',
-                'user' => new UserResource(Auth::user()),
+                'user' => new UserResource($authUser),
+                'debug_hit' => true,
             ]);
         }
 

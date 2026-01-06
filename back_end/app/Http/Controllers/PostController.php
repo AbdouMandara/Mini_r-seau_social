@@ -14,7 +14,7 @@ class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Post::with(['user', 'comments.user', 'likes'])
+        $query = Post::with(['user.badges', 'comments.user', 'likes'])
             ->where('is_delete', false);
 
         if ($request->has('tag')) {
@@ -31,7 +31,7 @@ class PostController extends Controller
             });
         }
 
-        return PostResource::collection($query->latest()->get());
+        return PostResource::collection($query->latest()->paginate(10));
     }
 
     public function store(PostRequest $request)
@@ -51,6 +51,9 @@ class PostController extends Controller
             'niveau' => $request->niveau,
             'matiere' => $request->matiere,
         ]);
+
+        // Detect mentions in the description
+        $this->detectMentions($post, $request->description, $request->user());
 
         Activity::log($request->user()->id, 'post', "A publié un nouveau post : " . substr($post->description, 0, 50) . "...");
 
@@ -87,6 +90,11 @@ class PostController extends Controller
         }
         $post->save();
 
+        // Redetect mentions if description changed
+        if ($request->has('description')) {
+            $this->detectMentions($post, $request->description, $request->user());
+        }
+
         return response()->json([
             'message' => 'Post modifié avec succès',
             'post' => new PostResource($post->load('user')),
@@ -109,18 +117,61 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
-        return new PostResource($post->load(['user', 'comments.user', 'likes']));
+        return new PostResource($post->load(['user.badges', 'comments.user', 'likes']));
     }
 
     public function userPosts(Request $request, $userId = null)
     {
         $id = $userId ?: $request->user()->id;
         return PostResource::collection(
-            Post::with(['user', 'comments', 'likes'])
+            Post::with(['user.badges', 'comments', 'likes'])
                 ->where('id_user', $id)
                 ->where('is_delete', false)
                 ->latest()
-                ->get()
+                ->paginate(10)
         );
+    }
+    public function getTags()
+    {
+        $tags = Post::whereNotNull('tag')
+            ->where('tag', '!=', '')
+            ->where('is_delete', false)
+            ->select('tag', \DB::raw('count(*) as total'))
+            ->groupBy('tag')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        return response()->json($tags);
+    }
+
+    private function detectMentions($post, $content, $author)
+    {
+        // Detection des mentions @Nom
+        preg_match_all('/@([a-zA-Z0-9_\x{00C0}-\x{017F}]+(?:\s[a-zA-Z0-9_\x{00C0}-\x{017F}]+)*)/u', $content, $matches);
+        $mentionedNames = array_unique($matches[1]);
+
+        foreach ($mentionedNames as $name) {
+            $user = \App\Models\User::where('nom', trim($name))->first();
+            if ($user && $user->id !== $author->id) {
+                // Ensure we don't spam notifications for the same post mention during update
+                $exists = \App\Models\Notification::where('id_user_target', $user->id)
+                    ->where('id_user_author', $author->id)
+                    ->where('id_post', $post->id_post)
+                    ->where('type', 'mention')
+                    ->exists();
+
+                if (!$exists) {
+                    $notification = \App\Models\Notification::create([
+                        'id_user_target' => $user->id,
+                        'id_user_author' => $author->id,
+                        'id_post' => $post->id_post,
+                        'type' => 'mention'
+                    ]);
+
+                    // Broadcast notification
+                    broadcast(new \App\Events\NotificationSent($notification))->toOthers();
+                }
+            }
+        }
     }
 }

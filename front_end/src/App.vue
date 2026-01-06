@@ -108,7 +108,8 @@ const fetchNotifications = async () => {
   if (!authStore.isAuthenticated) return;
   try {
     const res = await api.get('/notifications');
-    const newNotifs = res.data;
+    const newNotifs = res.data.data || res.data;
+    if (!Array.isArray(newNotifs)) return;
     const newUnread = newNotifs.filter(n => !n.is_read).length;
 
     if (newUnread > prevUnreadCount.value) {

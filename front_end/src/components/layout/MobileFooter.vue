@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="authStore.user && !route.path.startsWith('/admin') && !isBlockedPage" class="mobile-footer">
+  <nav v-if="authStore.user && userSlug && !route.path.startsWith('/admin') && !isBlockedPage" class="mobile-footer">
     <div class="footer-grid">
       <router-link :to="`/${userSlug}/home`" class="footer-item">
         <span class="material-symbols-rounded">home</span>

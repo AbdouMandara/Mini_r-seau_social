@@ -82,7 +82,8 @@ const router = useRouter();
 const route = useRoute();
 
 const userSlug = computed(() => {
-  const name = authStore.user?.slug || authStore.user?.nom || '';
+  const user = authStore.user?.data || authStore.user;
+  const name = user?.slug || user?.nom || '';
   return name.replace(/ /g, '_');
 });
 
@@ -92,7 +93,7 @@ const navigateTo = (path) => {
 };
 
 const navigateToFeedback = () => {
-  router.push(`/${userSlug.value}/feedback`);
+  router.push({ name: 'feedback', params: { nom_user: userSlug.value || 'user' } });
   emit('close');
 };
 </script>

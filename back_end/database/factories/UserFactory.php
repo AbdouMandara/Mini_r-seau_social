@@ -25,7 +25,7 @@ class UserFactory extends Factory
     {
         return [
             'nom' => fake()->name(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= 'password',
             'photo_profil' => 'images/profil_user/default.jpg',
             'etablissement' => 'UY1',
             'filiere' => 'GL',

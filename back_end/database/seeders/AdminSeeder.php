@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
 
         User::create([
             'nom' => $nom,
-            'password' => Hash::make($password),
+            'password' => $password,
             'is_admin' => true,
             'region' => 'Centre', // Valeur par défaut requise
             'photo_profil' => 'https://ui-avatars.com/api/?name=' . urlencode($nom),

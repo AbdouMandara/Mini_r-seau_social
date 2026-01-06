@@ -1,7 +1,12 @@
 <template>
   <div class="home-view">
-    <div v-if="loading" class="loader-wrapper">
-      <Loader />
+    <div v-if="loading" class="feed-container">
+      <div class="filter-bar card">
+        <div class="skeleton-line full-width"></div>
+      </div>
+      <div class="posts-feed">
+        <PostSkeleton v-for="i in 3" :key="i" />
+      </div>
     </div>
     
     <div v-else class="feed-container">
@@ -58,14 +63,25 @@
         </button>
       </div>
 
-      <div class="posts-feed">
-        <div v-for="post in posts" :key="post.id_post" :id="'post-' + post.id_post">
-          <PostCard 
-            :post="post" 
-            @refresh="fetchPosts"
-            @open-comments="openComments"
-          />
+      <div class="home-grid">
+        <div class="posts-feed">
+          <div v-for="post in posts" :key="post.id_post" :id="'post-' + post.id_post">
+            <PostCard 
+              :post="post" 
+              @refresh="fetchPosts(false)"
+              @open-comments="openComments"
+            />
+          </div>
+          
+          <!-- Infinite Scroll Trigger -->
+          <div ref="scrollTrigger" class="scroll-trigger">
+            <Loader v-if="loadingMore" />
+            <p v-else-if="!hasMore && posts.length > 0" class="no-more">Vous avez tout vu ! ✨</p>
+          </div>
         </div>
+
+        <!-- Desktop Sidebar -->
+        <TrendingSidebar v-if="isDesktop" />
       </div>
     </div>
 
@@ -85,18 +101,25 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import api from '@/utils/api';
 import PostCard from '@/components/PostCard.vue';
+import PostSkeleton from '@/components/PostSkeleton.vue';
 import CommentDrawer from '@/components/CommentDrawer.vue';
 import Loader from '@/components/Loader.vue';
+import TrendingSidebar from '@/components/layout/TrendingSidebar.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const posts = ref([]);
 const loading = ref(true);
+const loadingMore = ref(false);
 const isDesktop = ref(window.innerWidth >= 768);
 
 const isDrawerOpen = ref(false);
 const activePostId = ref(null);
+
+const scrollTrigger = ref(null);
+const page = ref(1);
+const hasMore = ref(true);
 
 const filters = reactive({
   tag: '',
@@ -108,7 +131,7 @@ let etablissementTimeout = null;
 const handleEtablissementSearch = () => {
     if (etablissementTimeout) clearTimeout(etablissementTimeout);
     etablissementTimeout = setTimeout(() => {
-        fetchPosts();
+        fetchPosts(false);
     }, 500);
 };
 
@@ -121,21 +144,45 @@ const resetFilters = () => {
   filters.tag = '';
   filters.filiere = '';
   filters.etablissement = '';
-  fetchPosts();
+  fetchPosts(false);
 };
 
-const fetchPosts = async () => {
+const fetchPosts = async (append = false) => {
+  if (append) {
+    loadingMore.value = true;
+  } else {
+    loading.value = true;
+    page.value = 1;
+    hasMore.value = true;
+  }
+
   try {
-    const params = {};
+    const params = { page: page.value };
     if (filters.tag) params.tag = filters.tag;
     if (filters.filiere) params.filiere = filters.filiere;
     if (filters.etablissement) params.etablissement = filters.etablissement;
 
     const res = await api.get('/posts', { params });
-    posts.value = res.data.data || res.data;
+    const responseData = res.data.data || res.data;
+    const newPosts = Array.isArray(responseData) ? responseData : (responseData.data || []);
     
-    // Check for deep link
-    if (route.params.post_id) {
+    if (append) {
+      posts.value = [...posts.value, ...newPosts];
+    } else {
+      posts.value = newPosts;
+    }
+
+    // Check if there are more pages based on Laravel pagination structure
+    if (res.data.meta) {
+        hasMore.value = res.data.meta.current_page < res.data.meta.last_page;
+    } else if (res.data.current_page) {
+        hasMore.value = res.data.current_page < res.data.last_page;
+    } else {
+        hasMore.value = newPosts.length === 10;
+    }
+
+    // Check for deep link (only on first load)
+    if (!append && route.params.post_id) {
         setTimeout(() => {
             const el = document.getElementById('post-' + route.params.post_id);
             if (el) {
@@ -150,20 +197,52 @@ const fetchPosts = async () => {
     console.error(err);
   } finally {
     loading.value = false;
+    loadingMore.value = false;
   }
 };
+
+const handleInfiniteScroll = (entries) => {
+    const target = entries[0];
+    if (target.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
+        page.value++;
+        fetchPosts(true);
+    }
+};
+
+let observer = null;
 
 const handleResize = () => {
     isDesktop.value = window.innerWidth >= 768;
 };
 
 onMounted(() => {
+    // Initial filter from query if present
+    if (route.query.tag) {
+        filters.tag = route.query.tag;
+    }
     fetchPosts();
     window.addEventListener('resize', handleResize);
+
+    // Setup intersection observer
+    observer = new IntersectionObserver(handleInfiniteScroll, {
+        rootMargin: '100px',
+        threshold: 0.1
+    });
+    if (scrollTrigger.value) {
+        observer.observe(scrollTrigger.value);
+    }
+});
+
+// Watch for query changes (when clicking a tag from another page or same page)
+import { watch } from 'vue';
+watch(() => route.query.tag, (newTag) => {
+    filters.tag = newTag || '';
+    fetchPosts(false);
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
+    if (observer) observer.disconnect();
 });
 </script>
 
@@ -172,10 +251,12 @@ onUnmounted(() => {
   padding: 10px 0 80px;
 }
 
-.loader-wrapper {
-    height: 60vh;
-    display: flex;
-    align-items: center;
+.skeleton-line.full-width {
+  width: 100%;
+  height: 40px;
+  background: var(--input-bg);
+  border-radius: 8px;
+  animation: pulse 1.5s infinite ease-in-out;
 }
 
 .welcome-banner {
@@ -271,18 +352,43 @@ onUnmounted(() => {
 
 @media (min-width: 768px) {
     .filter-bar {
-        margin: 0 auto 20px;
+        margin: 0 0 20px; /* Aligné à gauche sur desktop */
     }
     .filter-input {
         width: 150px;
     }
 }
 
-.posts-feed {
-    max-width: 600px;
-    margin: 0 auto;
+.home-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
+}
+
+@media (min-width: 1024px) {
+    .home-grid {
+        grid-template-columns: 1fr 300px;
+        align-items: start;
+    }
+}
+
+.posts-feed {
+    width: 100%;
+    max-width: 600px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.scroll-trigger {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.no-more {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 </style>

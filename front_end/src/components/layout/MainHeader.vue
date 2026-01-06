@@ -166,13 +166,13 @@
                     </div>
                     <span>Mon Profil</span>
                   </div>
-                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="navigateTo(`/${userSlug}/add_post`)">
+                  <div v-if="route.name !== 'add-post'" class="dropdown-item" @click="navigateTo({ name: 'add-post', params: { nom_user: userSlug || 'user' } })">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">add_circle</span>
                     </div>
                     <span>Ajouter un post</span>
                   </div>
-                  <div class="dropdown-item" @click="navigateTo(`/${userSlug}/feedback`)">
+                  <div class="dropdown-item" @click="navigateTo({ name: 'feedback', params: { nom_user: userSlug || 'user' } })">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">info</span>
                     </div>
@@ -227,20 +227,23 @@ const searching = ref(false);
 let searchTimeout = null;
 
 const userSlug = computed(() => {
-  const name = authStore.user?.slug || authStore.user?.nom || '';
+  const user = authStore.user?.data || authStore.user;
+  const name = user?.slug || user?.nom || '';
   return name.replace(/ /g, '_');
 });
 const displayName = computed(() => {
-  const name = authStore.user?.nom || 'User';
-  return authStore.user?.is_admin && name.length > 5 ? name.substring(0, 5) : name;
+  const user = authStore.user?.data || authStore.user;
+  const name = user?.nom || 'User';
+  return user?.is_admin && name.length > 5 ? name.substring(0, 5) : name;
 });
 
 const profileImageUrl = computed(() => {
-  if (authStore.user?.photo_profil) {
-    if (authStore.user.photo_profil.startsWith('http')) return authStore.user.photo_profil;
-    return `${BASE_URL}/storage/${authStore.user.photo_profil}`;
+  const user = authStore.user?.data || authStore.user;
+  if (user?.photo_profil) {
+    if (user.photo_profil.startsWith('http')) return user.photo_profil;
+    return `${BASE_URL}/storage/${user.photo_profil}`;
   }
-  return 'https://ui-avatars.com/api/?name=' + (authStore.user?.nom || 'User');
+  return 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
 });
 
 const getUserAvatar = (user) => {
@@ -296,12 +299,12 @@ const toggleUserMenu = () => {
 };
 
 const goHome = () => {
-    router.push(`/${userSlug.value}/home`);
+    router.push({ name: 'home', params: { nom_user: userSlug.value || 'user' } });
     showUserMenu.value = false;
 };
 
 const goToProfile = () => {
-  router.push(`/${userSlug.value}/profil`);
+  router.push({ name: 'profile', params: { nom_user: userSlug.value || 'user' } });
   showUserMenu.value = false;
 };
 
@@ -309,7 +312,13 @@ const navigateToUserProfile = (user) => {
   showSearchOverlay.value = false;
   showMobileSearch.value = false;
   const targetSlug = (user.slug || user.nom).replace(/ /g, '_');
-  router.push(`/${authStore.user?.nom}/profil/${targetSlug}`);
+  router.push({ 
+    name: 'profile', 
+    params: { 
+        nom_user: authStore.user?.nom || 'user',
+        target_name: targetSlug 
+    } 
+  });
   clearSearch();
 };
 

@@ -15,13 +15,20 @@
           </div>
           
           <div class="user-info-section">
-            <div class="name-row">
-              <h2 class="display-name">{{ user.nom }}</h2>
-              <span class="verified-badge" v-if="posts.length > 5">
-                <span class="material-symbols-rounded">check_circle</span>
+            </div>
+            <div v-if="user.badges?.length > 0" class="profile-badges-row">
+              <span 
+                v-for="badge in user.badges" 
+                :key="badge.id_badge" 
+                class="profile-badge-item"
+                :title="badge.description"
+                :style="{ background: badge.color + '15', color: badge.color, border: '1px solid ' + badge.color + '30' }"
+              >
+                <span class="badge-icon-mini">{{ badge.icon }}</span>
+                {{ badge.name }}
               </span>
             </div>
-<p class="handle">@{{ (user.slug || user.nom).toLowerCase().replace(/ /g, '_') }}</p>
+            <p class="handle">@{{ (user.slug || user.nom).toLowerCase().replace(/ /g, '_') }}</p>
             
             <div class="profile-actions">
               <template v-if="isMyProfile">
@@ -440,7 +447,7 @@ const fetchUserPosts = async () => {
         }
 
         const userRes = await api.get(`/users/profile/${username}`);
-        user.value = userRes.data;
+        user.value = userRes.data.data || userRes.data;
         isFollowing.value = user.value.is_following;
 
         const postsRes = await api.get(`/users/${user.value.id}/posts`);
@@ -590,8 +597,9 @@ const handleEditProfile = async () => {
 };
 
 const handleShareProfile = () => {
-    const username = (user.value.slug || user.value.nom).replace(/ /g, '_');
-    const profileUrl = `${window.location.host}/${username}/profil`;
+    const userNom = user.value.nom || user.value.data?.nom || 'User';
+    const username = (user.value.slug || user.value.data?.slug || userNom).replace(/ /g, '_');
+    const profileUrl = `${window.location.origin}/${username}/profil`;
     const message = `Voir mon profil sur !Pozterr : ${profileUrl}`;
     
     Swal.fire({
@@ -626,7 +634,11 @@ const formatPostImg = (url) => {
 };
 
 const formatTime = (dateStr) => {
-    const date = new Date(dateStr);
+    if (!dateStr) return '...';
+    const str = typeof dateStr === 'object' ? dateStr.date : dateStr;
+    const date = new Date(str);
+    if (isNaN(date.getTime())) return '...';
+    
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' à ' + 
            date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 };
@@ -636,7 +648,13 @@ const truncate = (str, n) => {
 };
 
 const goToPost = (post) => {
-    router.push(`/${authStore.user.nom}/home/${post.id_post}`);
+    router.push({ 
+        name: 'home', 
+        params: { 
+            nom_user: authStore.user?.nom || 'user',
+            post_id: post.id_post 
+        } 
+    });
 };
 
 onMounted(async () => {
@@ -746,6 +764,27 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
   color: var(--text-muted);
   font-weight: 500;
   margin-bottom: 20px;
+}
+
+.profile-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 5px 0 15px;
+}
+
+.profile-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-icon-mini {
+  font-size: 1rem;
 }
 
 .profile-actions {

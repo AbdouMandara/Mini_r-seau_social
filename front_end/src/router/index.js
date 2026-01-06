@@ -142,7 +142,8 @@ router.beforeEach(async (to, from, next) => {
       if (user.is_admin) {
         next('/admin/dashboard');
       } else {
-        next(`/${user.nom}/home`);
+        const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
+        next(`/${username}/home`);
       }
       return;
     }

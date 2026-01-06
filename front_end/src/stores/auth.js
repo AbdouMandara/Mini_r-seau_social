@@ -23,6 +23,8 @@ export const useAuthStore = defineStore('auth', {
                 const response = await api.post('/register', userData);
 
                 this.user = response.data.user?.data || response.data.user;
+                if (!this.user && response.data.data) this.user = response.data.data; // Fallback
+                
                 localStorage.setItem('pozterr_logged_in', 'true');
                 return response.data;
 
@@ -39,14 +41,25 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             this.loading = true;
             this.error = null;
+            localStorage.removeItem('pozterr_logged_in'); // Clean start
 
             try {
                 await api.get('/sanctum/csrf-cookie', { baseURL: '/' });
 
                 const response = await api.post('/login', credentials);
+                console.log('Login raw response:', response.data);
 
-                this.user = response.data.user?.data || response.data.user;
-                localStorage.setItem('pozterr_logged_in', 'true');
+                // Handle potential Laravel API Resource wrapping ('data' key)
+                const userData = response.data.user?.data || response.data.user;
+
+                if (userData) {
+                    this.user = userData;
+                    console.log('User logged in:', this.user);
+                    localStorage.setItem('pozterr_logged_in', 'true');
+                } else {
+                    console.error('Login success but user data missing in response:', response.data);
+                    // Do not set this.user to null here if it was already null
+                }
                 return response.data;
 
             } catch (err) {
@@ -78,6 +91,7 @@ export const useAuthStore = defineStore('auth', {
 
             try {
                 const response = await api.get('/user');
+                console.log('Profile response:', response.data);
                 this.user = response.data.data || response.data;
             } catch (err) {
                 this.user = null;

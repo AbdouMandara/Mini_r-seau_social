@@ -56,16 +56,19 @@
 
         <div class="input-grid">
           <div class="input-group">
-            <label>Tag</label>
-            <select v-model="form.tag" class="input-control" required>
-              <option value="" disabled>Choisir un tag</option>
-              <option value="etude">Étude</option>
-              <option value="divertissement">Divertissement</option>
-              <option value="info">Information</option>
-              <option value="programmation">Programmation</option>
-              <option value="maths">Mathématiques</option>
-              <option value="devoir">Devoir</option>
-            </select>
+            <label>Tag (ex: etude, info...)</label>
+            <input 
+              v-model="form.tag" 
+              list="existing-tags"
+              class="input-control" 
+              placeholder="Ajouter un tag..."
+              required
+            >
+            <datalist id="existing-tags">
+              <option v-for="t in existingTags" :key="t.tag" :value="t.tag">
+                {{ t.total }} publications
+              </option>
+            </datalist>
           </div>
 
           <div class="input-group">
@@ -116,6 +119,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const loading = ref(false);
 const previewUrl = ref(null);
+const existingTags = ref([]);
 
 // Determine if we're in edit mode
 const isEditMode = computed(() => route.name === 'edit-post');
@@ -222,6 +226,7 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   loadPostData();
+  fetchExistingTags();
 });
 </script>
 

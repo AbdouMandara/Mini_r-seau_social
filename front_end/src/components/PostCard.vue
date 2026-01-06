@@ -4,14 +4,26 @@
     <div class="post-header">
       <img :src="userAvatar" class="post-avatar" @error="handleAvatarError" />
       <div class="user-info">
-        <h3 class="author-name" @click="goToProfile">{{ post.user?.data?.nom || post.user?.nom || 'Utilisateur inconnu' }}</h3>
+        <div class="name-with-badges">
+          <h3 class="author-name" @click="goToProfile">{{ authorNom }}</h3>
+          <div v-if="userBadges.length > 0" class="user-badges">
+            <span 
+              v-for="badge in userBadges" 
+              :key="badge.id_badge" 
+              class="badge-icon"
+              :title="badge.name"
+              :style="{ color: badge.color }"
+            >{{ badge.icon }}</span>
+          </div>
+        </div>
         <p class="joined-date">Publié le {{ formatDate(post.created_at) }}</p>
       </div>
       <div v-if="shouldShowActions" class="post-actions">
         <span class="material-symbols-rounded menu-dots" @click="showMenu = !showMenu">more_horiz</span>
         <div v-if="showMenu" class="dropdown-menu">
-          <button @click="editPost">Modifier</button>
-          <button @click="deletePost" class="delete-btn">Supprimer</button>
+          <button v-if="isOwner" @click="editPost">Modifier</button>
+          <button v-if="isOwner" @click="deletePost" class="delete-btn">Supprimer</button>
+          <button v-if="!isOwner" @click="reportPost" class="report-btn">Signaler</button>
         </div>
       </div>
     </div>
@@ -19,7 +31,12 @@
     <!-- Body -->
     <div class="post-content">
       <div class="post-tags">
-        <span class="tag-badge" :class="post.tag">#{{ post.tag }}</span>
+        <span 
+          v-if="post.tag" 
+          class="tag-badge clickable" 
+          :class="post.tag"
+          @click="filterByTag(post.tag)"
+        >#{{ post.tag }}</span>
         <span class="info-badge">{{ post.filiere }} | Niv. {{ post.niveau }}</span>
         <span v-if="post.matiere" class="matiere-badge">📚 {{ post.matiere }}</span>
       </div>
@@ -27,7 +44,7 @@
       <div v-if="post.img_post" class="post-image-container">
         <img :src="postImageUrl" class="post-image" />
       </div>
-      <p class="post-description">{{ post.description }}</p>
+      <p class="post-description" v-html="formattedDescription"></p>
     </div>
 
     <!-- Footer -->
@@ -69,17 +86,84 @@ const isLiked = ref(props.post.likes?.some(l => l.id_user === authStore.user?.id
 const likesCount = ref(props.post.likes?.length || 0);
 const commentsCount = ref(props.post.comments?.length || 0);
 
-const isOwner = computed(() => authStore.user?.id === props.post.id_user);
 const isOnProfile = computed(() => route.name === 'profile');
-const shouldShowActions = computed(() => isOwner.value && isOnProfile.value);
+const shouldShowActions = computed(() => (isOwner.value && isOnProfile.value) || !isOwner.value); // Allow reporting for others
 
 const goToProfile = () => {
-    // Navigate correctly based on current route or target
-    const targetNom = props.post.user?.nom || '';
+    const targetNom = props.post.user?.nom || props.post.user?.data?.nom || '';
     if (targetNom) {
-        router.push(`/${authStore.user?.nom}/profil/${targetNom}`);
+        router.push({ 
+            name: 'profile', 
+            params: { 
+                nom_user: authStore.user?.nom || 'user', 
+                target_name: (props.post.user?.slug || targetNom).replace(/ /g, '_')
+            } 
+        });
     }
 };
+
+const isOwner = computed(() => {
+    const authId = authStore.user?.id || authStore.user?.data?.id;
+    const postUserId = props.post.user?.id || props.post.user?.data?.id || props.post.id_user;
+    return authId === postUserId;
+});
+
+const reportPost = async () => {
+  showMenu.value = false;
+  const { value: reason } = await Swal.fire({
+    title: 'Signaler ce post',
+    input: 'textarea',
+    inputLabel: 'Raison du signalement',
+    inputPlaceholder: 'Expliquez pourquoi ce contenu est inapproprié...',
+    showCancelButton: true,
+    confirmButtonText: 'Signaler',
+    cancelButtonText: 'Annuler',
+    confirmButtonColor: 'var(--primary-color)',
+    background: 'var(--card-bg)',
+    color: 'var(--text-color)',
+    inputValidator: (value) => {
+      if (!value) return 'Vous devez fournir une raison !'
+    }
+  });
+
+  if (reason) {
+    try {
+      await api.post('/reports', {
+        id_post: props.post.id_post,
+        reason: reason
+      });
+      Swal.fire({
+        icon: 'success',
+        title: 'Merci !',
+        text: 'Votre signalement a été envoyé.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Erreur', 'Impossible d\'envoyer le signalement.', 'error');
+    }
+  }
+};
+
+const filterByTag = (tag) => {
+    router.push({ 
+        name: 'home', 
+        params: { nom_user: authStore.user?.nom || 'user' },
+        query: { tag } 
+    });
+};
+
+const formattedDescription = computed(() => {
+    if (!props.post.description) return '';
+    
+    // Replace mentions @Name with links
+    // JS compatible regex for names with potential spaces (covers accented chars)
+    return props.post.description.replace(/@([a-zA-Z0-9_\u00C0-\u017F]+(?:\s[a-zA-Z0-9_\u00C0-\u017F]+)*)/g, (match, name) => {
+        const currentUser = authStore.user?.nom || 'user';
+        return `<a href="/${currentUser}/profil/${name.trim()}" class="mention-link">${match}</a>`;
+    });
+});
 
 // Sync local refs when props change (from parent refreshes)
 watch(() => props.post, (newPost) => {
@@ -88,11 +172,24 @@ watch(() => props.post, (newPost) => {
     commentsCount.value = newPost.comments?.length || 0;
 }, { deep: true });
 
+const userBadges = computed(() => {
+    const user = props.post.user?.data || props.post.user;
+    return user?.badges || [];
+});
+
+const authorNom = computed(() => {
+    const user = props.post.user?.data || props.post.user;
+    return user?.nom || 'Utilisateur inconnu';
+});
+
 const userAvatar = computed(() => {
   const user = props.post.user?.data || props.post.user;
   const url = user?.photo_profil;
-  if (!url) return 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
-  return url.startsWith('http') ? url : `${BASE_URL}/storage/${url}`;
+  if (url) {
+    if (url.startsWith('http')) return url;
+    return `${BASE_URL}/storage/${url}`;
+  }
+  return 'https://ui-avatars.com/api/?name=' + (user?.nom || 'User');
 });
 
 const handleAvatarError = (e) => {
@@ -106,11 +203,19 @@ const postImageUrl = computed(() => {
   return url.startsWith('http') ? url : `${BASE_URL}/storage/${url}`;
 });
 
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
+const formatDate = (dateString) => {
+  if (!dateString) return '...';
+  // Handle Laravel date objects or strings
+  const str = typeof dateString === 'object' ? dateString.date : dateString;
+  const date = new Date(str);
+  
+  if (isNaN(date.getTime())) {
+    return '...';
+  }
+  
   return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
@@ -118,21 +223,41 @@ const formatDate = (dateStr) => {
 };
 
 const handleLike = async () => {
+  // Optimistic Update
+  const originalLiked = isLiked.value;
+  const originalCount = likesCount.value;
+
+  isLiked.value = !isLiked.value;
+  likesCount.value = isLiked.value ? likesCount.value + 1 : likesCount.value - 1;
+
+  if (isLiked.value) {
+    confetti({
+      particleCount: 80,
+      spread: 50,
+      origin: { y: 0.6 },
+      ticks: 150
+    });
+  }
+
   try {
     const res = await api.post(`/posts/${props.post.id_post}/like`);
+    // Sync with server response
     isLiked.value = res.data.liked;
     likesCount.value = res.data.likes_count;
-    
-    if (res.data.liked) {
-      confetti({
-        particleCount: 80,
-        spread: 50,
-        origin: { y: 0.6 },
-        ticks: 150 // Durée réduite (ticks est le nombre de frames)
-      });
-    }
   } catch (err) {
     console.error('Like error', err);
+    // Rollback on error
+    isLiked.value = originalLiked;
+    likesCount.value = originalCount;
+    
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'error',
+      title: 'Erreur lors du like',
+      showConfirmButton: false,
+      timer: 3000
+    });
   }
 };
 
@@ -253,6 +378,22 @@ const editPost = () => {
   object-fit: cover;
 }
 
+.name-with-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-badges {
+    display: flex;
+    gap: 4px;
+}
+
+.badge-icon {
+    font-size: 1rem;
+    cursor: help;
+}
+
 .author-name {
     cursor: pointer;
     transition: color 0.2s;
@@ -340,6 +481,28 @@ const editPost = () => {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     color: var(--text-color);
+}
+
+.tag-badge.clickable {
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.tag-badge.clickable:hover {
+    transform: scale(1.05);
+    background: var(--primary-color);
+    color: white;
+}
+
+:deep(.mention-link) {
+    color: var(--primary-color);
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+:deep(.mention-link:hover) {
+    opacity: 0.8;
 }
 
 .action-btn.liked .material-symbols-rounded {

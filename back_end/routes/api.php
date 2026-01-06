@@ -11,11 +11,15 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+\Log::info('API routes file loaded');
+\Illuminate\Support\Facades\Log::info('Request path: ' . request()->path());
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
+Route::get('/tags', [PostController::class, 'getTags']);
 Route::get('/users/{userId}/posts', [PostController::class, 'userPosts']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,6 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/feedbacks', [AdminController::class, 'getFeedbacks']);
         Route::get('/activities', [\App\Http\Controllers\ActivityController::class, 'index']);
         Route::post('/users/{user}/toggle-block', [AdminController::class, 'toggleBlock']);
+        
+        // Admin Reports
+        // Route::get('/reports', [ReportController::class, 'index']);
+        // Route::put('/reports/{report}', [ReportController::class, 'update']);
     });
 });
 
@@ -58,4 +66,7 @@ Route::middleware(['auth:sanctum', 'checkBlocked'])->group(function () {
     
     // Feedback
     Route::post('/feedback', [FeedbackController::class, 'store']);
+
+    // Reports
+    // Route::post('/reports', [ReportController::class, 'store']);
 });

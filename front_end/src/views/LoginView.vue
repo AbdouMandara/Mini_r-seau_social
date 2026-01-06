@@ -111,17 +111,21 @@ const handleLogin = async () => {
   error.value = null;
 
   try {
-    const res = await authStore.login(form);
+    await authStore.login(form);
     
-    if (res.user.is_admin) {
+    const user = authStore.user;
+    if (!user) throw new Error('Utilisateur non trouvé après connexion');
+
+    if (user.is_admin) {
         router.push('/admin/dashboard');
         return;
     }
 
-    const username = (res.user.slug || res.user.nom).replace(/ /g, '_');
+    const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
     router.push(`/${username}/home`);
   } catch (err) {
-    error.value = err.response?.data?.message || 'Identifiants incorrects';
+    console.error('Login failed with error:', err);
+    error.value = err.response?.data?.message || err.message || 'Identifiants incorrects';
   } finally {
     loading.value = false;
   }
