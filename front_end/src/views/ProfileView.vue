@@ -15,7 +15,6 @@
           </div>
           
           <div class="user-info-section">
-            </div>
             <div v-if="user.badges?.length > 0" class="profile-badges-row">
               <span 
                 v-for="badge in user.badges" 
@@ -49,13 +48,26 @@
                 >
                   {{ isFollowing ? 'Suivi' : 'Suivre' }}
                 </button>
-                <button class="btn btn-icon-modern" @click="handleShareProfile">
-                  <span class="material-symbols-rounded">share</span>
-                </button>
+                <div class="secondary-actions">
+                    <button class="btn btn-icon-modern" @click="handleShareProfile">
+                       <span class="material-symbols-rounded">share</span>
+                    </button>
+                    <!-- Only show report button if not admin, or admins can report too -->
+                    <button class="btn btn-icon-modern report-btn" @click="openReportModal" title="Signaler l'utilisateur">
+                       <span class="material-symbols-rounded">flag</span>
+                    </button>
+                </div>
               </template>
             </div>
           </div>
         </div>
+
+    <ReportModal 
+      :is-open="showReportModal"
+      :user-id="user?.id"
+      :user-name="user?.nom"
+      @close="showReportModal = false"
+    />
 
         <div class="profile-metrics">
           <div class="metric-card">
@@ -315,6 +327,7 @@ import PostCard from '@/components/PostCard.vue';
 import CommentDrawer from '@/components/CommentDrawer.vue';
 import Loader from '@/components/Loader.vue';
 import Swal from 'sweetalert2';
+import ReportModal from '@/components/ReportModal.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -322,6 +335,9 @@ const router = useRouter();
 const user = ref(null);
 const posts = ref([]);
 const loading = ref(true);
+
+const showReportModal = ref(false);
+const openReportModal = () => showReportModal.value = true;
 
 const isDrawerOpen = ref(false);
 const activePostId = ref(null);
@@ -798,6 +814,19 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
   border-radius: 12px;
   padding: 10px 20px;
   font-size: 0.95rem;
+}
+
+.secondary-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.report-btn {
+    color: var(--text-muted);
+}
+.report-btn:hover {
+    color: var(--error);
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .btn-primary-modern {

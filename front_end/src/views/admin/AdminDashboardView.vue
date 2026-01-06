@@ -49,6 +49,19 @@
           </div>
         </div>
 
+        <div class="stat-card" v-if="stats.unread_reports > 0 || stats.unread_new_users > 0">
+           <div class="icon-wrapper orange">
+             <span class="material-symbols-rounded">notifications</span>
+           </div>
+           <div class="stat-content">
+             <h3>Notifications</h3>
+             <p class="stat-value" style="font-size: 1rem; font-weight: 600;">
+               {{ stats.unread_reports }} signalement(s)<br>
+               {{ stats.unread_new_users }} inscription(s)
+             </p>
+           </div>
+        </div>
+
         <!-- Real-time Clock Card -->
         <div class="stat-card clock-card">
           <div class="icon-wrapper orange">
@@ -78,7 +91,9 @@ const stats = ref({
     total_users: 0,
     total_posts: 0,
     total_likes: 0,
-    total_comments: 0
+    total_comments: 0,
+    unread_reports: 0,
+    unread_new_users: 0
 });
 const loading = ref(true);
 const currentTime = ref('');

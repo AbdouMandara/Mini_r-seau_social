@@ -172,6 +172,15 @@ const loadPostData = async () => {
   }
 };
 
+const fetchExistingTags = async () => {
+  try {
+    const res = await api.get('/tags');
+    existingTags.value = res.data;
+  } catch (err) {
+    console.error('Error fetching tags', err);
+  }
+};
+
 const handleSubmit = async () => {
   loading.value = true;
   

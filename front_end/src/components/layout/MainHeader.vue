@@ -150,6 +150,12 @@
                     </div>
                     <span>Activités</span>
                   </div>
+                  <div v-if="route.name !== 'admin-badges'" class="dropdown-item" @click="navigateTo('/admin/badges')">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">stars</span>
+                    </div>
+                    <span>Gamification</span>
+                  </div>
                 </template>
 
                 <!-- User Options -->

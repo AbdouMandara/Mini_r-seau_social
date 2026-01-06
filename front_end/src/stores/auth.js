@@ -91,7 +91,6 @@ export const useAuthStore = defineStore('auth', {
 
             try {
                 const response = await api.get('/user');
-                console.log('Profile response:', response.data);
                 this.user = response.data.data || response.data;
             } catch (err) {
                 this.user = null;

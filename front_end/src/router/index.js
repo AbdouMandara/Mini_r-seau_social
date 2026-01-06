@@ -74,6 +74,12 @@ const router = createRouter({
         component: () => import('@/views/admin/AdminActivityView.vue'),
         meta: { auth: true, admin: true }
     },
+    {
+        path: '/admin/badges',
+        name: 'admin-badges',
+        component: () => import('@/views/admin/AdminBadgesView.vue'),
+        meta: { auth: true, admin: true }
+    },
     // Blocked Route
     {
       path: '/user_bloque',

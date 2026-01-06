@@ -31,6 +31,8 @@ class AuthController extends Controller
         Auth::login($user);
 
         Activity::log($user->id, 'inscription', "S'est inscrit sur la plateforme");
+        
+        event(new \App\Events\UserRegistered($user));
 
         return response()->json([
             'message' => 'Inscription réussie',

@@ -3,57 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
-use App\Models\Activity;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
+    // Admin: Get all reports
     public function index()
     {
-        // For admin to see all reports
-        return response()->json(
-            Report::with(['reporter', 'post', 'reportedUser'])
-                ->latest()
-                ->get()
-        );
+        $reports = Report::with(['reporter', 'post', 'reportedUser'])
+                         ->orderBy('created_at', 'desc')
+                         ->get();
+        return response()->json($reports);
     }
 
+    // User: Submit a report
     public function store(Request $request)
     {
         $request->validate([
-            'reason' => 'required|string|max:1000',
-            'id_post' => 'nullable|uuid|exists:posts,id_post',
-            'id_reported_user' => 'nullable|uuid|exists:users,id',
+            'reason' => 'required|string|max:500',
+            'id_post' => 'nullable|exists:posts,id_post',
+            'id_reported_user' => 'nullable|exists:users,id',
         ]);
 
+        if (!$request->id_post && !$request->id_reported_user) {
+            return response()->json(['message' => 'Une cible (post ou utilisateur) est requise.'], 422);
+        }
+
+        // Prevent duplicate pending reports from same user for same target
+        $existing = Report::where('id_user_reporter', Auth::id())
+                          ->where('status', 'pending')
+                          ->where(function($q) use ($request) {
+                              if ($request->id_post) {
+                                  $q->where('id_post', $request->id_post);
+                              } else {
+                                  $q->where('id_reported_user', $request->id_reported_user);
+                              }
+                          })->exists();
+
+        if ($existing) {
+            return response()->json(['message' => 'Vous avez déjà signalé cet élément. Le signalement est en cours de traitement.'], 409);
+        }
+
         $report = Report::create([
-            'id_user_reporter' => $request->user()->id,
+            'id_user_reporter' => Auth::id(),
             'id_post' => $request->id_post,
             'id_reported_user' => $request->id_reported_user,
             'reason' => $request->reason,
             'status' => 'pending'
         ]);
 
-        Activity::log($request->user()->id, 'report', "A signalé un " . ($request->id_post ? "post" : "utilisateur"));
+        // Emit Event to Notify Admins
+        event(new \App\Events\ReportSubmitted($report));
 
-        return response()->json([
-            'message' => 'Signalement envoyé avec succès',
-            'report' => $report
-        ], 201);
+        return response()->json($report, 201);
     }
 
+    // Admin: Update status
     public function update(Request $request, Report $report)
     {
-        // For admin to resolve/dismiss
         $request->validate([
-            'status' => 'required|in:resolved,dismissed'
+            'status' => 'required|in:pending,resolved,ignored'
         ]);
 
-        $report->update(['status' => $request->status]);
+        $report->status = $request->status;
+        $report->save();
 
-        return response()->json([
-            'message' => 'Statut du signalement mis à jour',
-            'report' => $report
-        ]);
+        return response()->json($report);
     }
 }

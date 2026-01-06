@@ -15,17 +15,24 @@ class AdminController extends Controller
 {
     public function getDashboardStats()
     {
-        $totalUsers = User::where('is_admin', false)->count();
-        $totalPosts = Post::count();
-        $totalLikes = Like::count();
-        $totalComments = Comment::count();
+        $adminId = request()->user()->id; // Changed $request to request() helper
 
-        return response()->json([
-            'total_users' => $totalUsers,
-            'total_posts' => $totalPosts,
-            'total_likes' => $totalLikes,
-            'total_comments' => $totalComments,
-        ]);
+        $stats = [
+            'total_users' => User::where('is_admin', false)->count(),
+            'total_posts' => Post::count(),
+            'total_likes' => Like::count(),
+            'total_comments' => Comment::count(),
+            'unread_reports' => Notification::where('id_user_target', $adminId)
+                                    ->where('type', 'report')
+                                    ->where('is_read', false)
+                                    ->count(),
+            'unread_new_users' => Notification::where('id_user_target', $adminId)
+                                    ->where('type', 'new_user')
+                                    ->where('is_read', false)
+                                    ->count(),
+        ];
+
+        return response()->json($stats);
     }
 
     public function getUsers(Request $request)

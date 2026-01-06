@@ -17,7 +17,7 @@ class PostRequest extends FormRequest
             'description' => 'required|string|max:100',
             'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
             'allow_comments' => 'boolean',
-            'tag' => 'required|string|in:etude,divertissement,info,programmation,maths,devoir',
+            'tag' => 'required|string|max:50',
             'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
             'niveau' => 'required|string|in:1,2',
             'matiere' => 'nullable|string|max:191',

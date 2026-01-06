@@ -59,10 +59,11 @@
         <span class="count visible">{{ commentsCount }}</span>
       </button>
 
-      <button class="action-btn" @click="handleShare">
-        <span class="material-symbols-rounded icon">share</span>
-      </button>
-    </div>
+    <ReportModal 
+      :is-open="showReportModal"
+      :post-id="post.id_post"
+    />
+  </div>
   </div>
 </template>
 
@@ -73,6 +74,7 @@ import { useRoute, useRouter } from 'vue-router';
 import confetti from 'canvas-confetti';
 import api, { BASE_URL } from '@/utils/api';
 import Swal from 'sweetalert2';
+import ReportModal from './ReportModal.vue';
 
 const props = defineProps(['post']);
 const emit = defineEmits(['open-comments', 'refresh']);
@@ -108,42 +110,11 @@ const isOwner = computed(() => {
     return authId === postUserId;
 });
 
-const reportPost = async () => {
-  showMenu.value = false;
-  const { value: reason } = await Swal.fire({
-    title: 'Signaler ce post',
-    input: 'textarea',
-    inputLabel: 'Raison du signalement',
-    inputPlaceholder: 'Expliquez pourquoi ce contenu est inapproprié...',
-    showCancelButton: true,
-    confirmButtonText: 'Signaler',
-    cancelButtonText: 'Annuler',
-    confirmButtonColor: 'var(--primary-color)',
-    background: 'var(--card-bg)',
-    color: 'var(--text-color)',
-    inputValidator: (value) => {
-      if (!value) return 'Vous devez fournir une raison !'
-    }
-  });
+const showReportModal = ref(false);
 
-  if (reason) {
-    try {
-      await api.post('/reports', {
-        id_post: props.post.id_post,
-        reason: reason
-      });
-      Swal.fire({
-        icon: 'success',
-        title: 'Merci !',
-        text: 'Votre signalement a été envoyé.',
-        timer: 2000,
-        showConfirmButton: false
-      });
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Erreur', 'Impossible d\'envoyer le signalement.', 'error');
-    }
-  }
+const reportPost = () => {
+  showMenu.value = false;
+  showReportModal.value = true;
 };
 
 const filterByTag = (tag) => {

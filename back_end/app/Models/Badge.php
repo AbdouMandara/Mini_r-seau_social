@@ -14,7 +14,7 @@ class Badge extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['name', 'description', 'icon', 'color'];
+    protected $fillable = ['name', 'description', 'icon', 'color', 'criteria_type', 'criteria_value'];
 
     public function users(): BelongsToMany
     {

@@ -41,10 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/feedbacks', [AdminController::class, 'getFeedbacks']);
         Route::get('/activities', [\App\Http\Controllers\ActivityController::class, 'index']);
         Route::post('/users/{user}/toggle-block', [AdminController::class, 'toggleBlock']);
+        Route::apiResource('badges', \App\Http\Controllers\BadgeController::class);
         
         // Admin Reports
-        // Route::get('/reports', [ReportController::class, 'index']);
-        // Route::put('/reports/{report}', [ReportController::class, 'update']);
+        Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index']);
+        Route::put('/reports/{report}', [\App\Http\Controllers\ReportController::class, 'update']);
     });
 });
 
@@ -68,5 +69,5 @@ Route::middleware(['auth:sanctum', 'checkBlocked'])->group(function () {
     Route::post('/feedback', [FeedbackController::class, 'store']);
 
     // Reports
-    // Route::post('/reports', [ReportController::class, 'store']);
+    Route::post('/reports', [\App\Http\Controllers\ReportController::class, 'store']);
 });
