@@ -62,6 +62,8 @@
     <ReportModal 
       :is-open="showReportModal"
       :post-id="post.id_post"
+      :user-id="post.user?.id || post.user?.data?.id"
+      @close="showReportModal = false"
     />
   </div>
   </div>
