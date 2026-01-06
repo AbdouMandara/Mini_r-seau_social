@@ -36,6 +36,12 @@
               Activités
             </div>
           </div>
+          <div v-if="route.name !== 'admin-reports'" class="menu-item-mobile" @click="navigateTo('/admin/signalements')">
+            <div class="label-with-icon">
+              <span class="material-symbols-rounded">flag</span>
+              Signalements
+            </div>
+          </div>
         </template>
 
         <div class="menu-item-mobile" @click="themeStore.toggleTheme">

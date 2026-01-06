@@ -14,12 +14,14 @@
         <div v-for="n in notifications" :key="n.id_notif" class="notif-item" :class="{ 'unread': !n.is_read }">
           <img :src="getAuthorAvatar(n.author)" class="notif-avatar" />
           <div class="notif-content">
-            <p v-if="n.type === 'follow'"><strong>{{ n.author.nom }}</strong> a commencé à vous suivre</p>
-            <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author.nom }}</strong> vous a suivi en retour</p>
-            <p v-else-if="n.type === 'mention'"><strong>{{ n.author.nom }}</strong> vous a mentionné dans un post</p>
-            <p v-else-if="n.type === 'post_filiere'"><strong>{{ n.author.nom }}</strong> a publié un nouveau post dans votre filière</p>
-            <p v-else><strong>{{ n.author.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
-            <span v-if="n.post" class="post-preview">"{{ n.post.description.substring(0, 30) }}..."</span>
+            <p v-if="n.type === 'follow'"><strong>{{ n.author?.nom }}</strong> a commencé à vous suivre</p>
+            <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author?.nom }}</strong> vous a suivi en retour</p>
+            <p v-else-if="n.type === 'mention'"><strong>{{ n.author?.nom }}</strong> vous a mentionné dans un post</p>
+            <p v-else-if="n.type === 'post_filiere'"><strong>{{ n.author?.nom }}</strong> a publié un nouveau post dans votre filière</p>
+            <p v-else-if="n.type === 'report'"><strong>{{ n.author?.nom }}</strong> a soumis un signalement</p>
+            <p v-else-if="n.type === 'new_user'"><strong>{{ n.author?.nom }}</strong> vient de s'inscrire</p>
+            <p v-else><strong>{{ n.author?.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
+            <span v-if="n.post" class="post-preview">"{{ n.post.description?.substring(0, 30) }}..."</span>
           </div>
         </div>
       </div>
@@ -38,6 +40,7 @@ defineProps({
 defineEmits(['close']);
 
 const getAuthorAvatar = (author) => {
+  if (!author) return 'https://ui-avatars.com/api/?name=U';
   if (author.photo_profil) {
     return `${BASE_URL}/storage/${author.photo_profil}`;
   }

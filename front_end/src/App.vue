@@ -119,10 +119,12 @@ const fetchNotifications = async () => {
           toast: true,
           position: 'top-end',
           icon: 'info',
-          title: latest.type === 'follow' ? `${latest.author.nom} a commencé à vous suivre` : 
-                 latest.type === 'follow_back' ? `${latest.author.nom} vous a suivi en retour` :
-                 latest.type === 'post_filiere' ? `Nouveau post de ${latest.author.nom} en ${latest.author.filiere}` :
-                 `${latest.author.nom} a interagi avec votre post`,
+          title: latest.type === 'follow' ? `${latest.author?.nom} a commencé à vous suivre` : 
+                 latest.type === 'follow_back' ? `${latest.author?.nom} vous a suivi en retour` :
+                 latest.type === 'post_filiere' ? `Nouveau post de ${latest.author?.nom} en ${latest.author?.filiere}` :
+                 latest.type === 'report' ? `Nouveau signalement de ${latest.author?.nom}` :
+                 latest.type === 'new_user' ? `Nouvelle inscription : ${latest.author?.nom}` :
+                 `${latest.author?.nom} a interagi avec votre post`,
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,

@@ -7,6 +7,7 @@ use App\Models\Feedback;
 use App\Models\Post;
 use App\Models\Like;
 use App\Models\Comment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
