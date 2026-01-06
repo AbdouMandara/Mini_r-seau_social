@@ -1,64 +1,76 @@
 <template>
   <div class="admin-activity-view">
-    <div class="admin-header">
-        <div class="header-title">
-            <span class="material-symbols-rounded">history</span>
-            <h2>Activités Récentes</h2>
+    <div class="view-header">
+      <div class="header-content">
+        <h2 class="page-title">Activités Récentes</h2>
+      </div>
+
+      <div class="filter-wrapper">
+         <div class="select-container">
+            <span class="material-symbols-rounded filter-icon">filter_list</span>
+            <select v-model="selectedFilter" class="custom-select">
+                <option value="all">Toutes</option>
+                <option value="post">Publications</option>
+                <option value="like">Likes</option>
+                <option value="commentaire">Commentaires</option>
+                <option value="follow">Abonnements</option>
+                <option value="inscription">Inscriptions</option>
+            </select>
+            <span class="material-symbols-rounded arrow-icon">expand_more</span>
         </div>
-        <p class="header-subtitle">Suivi de toutes les interactions sur la plateforme</p>
+      </div>
     </div>
 
     <div v-if="loading" class="loader-container">
-        <Loader />
+        <div class="spinner"></div>
+    </div>
+
+    <div v-else-if="filteredActivities.length === 0" class="empty-state">
+        <span class="material-symbols-rounded empty-icon">history</span>
+        <p>Aucune activité {{ selectedFilter !== 'all' ? 'de ce type' : '' }} enregistrée.</p>
     </div>
 
     <div v-else class="activity-grid">
-        <div v-for="activity in activities" :key="activity.id_activity" class="activity-card">
-            <div class="card-header">
-                <div class="user-row" @click="goToProfile(activity.user)">
-                    <img :src="getAvatar(activity.user)" class="card-avatar" />
-                    <div class="user-meta">
-                        <span class="user-name">{{ activity.user.nom }}</span>
-                        <span class="activity-date">le {{ formatDate(activity.created_at) }}</span>
-                    </div>
-                </div>
-                <div class="action-icon-bg" :class="activity.action">
-                    <span class="material-symbols-rounded">{{ formatActionIcon(activity.action) }}</span>
+      <div v-for="activity in filteredActivities" :key="activity.id_activity" class="activity-card" :class="activity.action">
+        <div class="card-header">
+            <div class="user-row" @click="goToProfile(activity.user)">
+                <img :src="getAvatar(activity.user)" class="avatar-sm" />
+                <div class="user-meta">
+                    <span class="user-name">{{ activity.user?.nom || 'Utilisateur' }}</span>
+                    <span class="activity-date">{{ formatDate(activity.created_at) }}</span>
                 </div>
             </div>
-
-            <div class="card-body">
-                <div class="action-row">
-                    <span class="action-label">{{ formatAction(activity.action) }}</span>
-                </div>
-                <p class="activity-details">{{ activity.details }}</p>
+            <div class="action-badge" :class="activity.action">
+                <span class="material-symbols-rounded">{{ formatActionIcon(activity.action) }}</span>
+                <span>{{ formatAction(activity.action) }}</span>
             </div>
         </div>
-
-        <div v-if="activities.length === 0" class="empty-state">
-            <span class="material-symbols-rounded empty-icon">history</span>
-            <p>Aucune activité enregistrée.</p>
+        
+        <div class="card-body">
+            <p class="activity-details">"{{ activity.details }}"</p>
         </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
-import Loader from '@/components/Loader.vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const activities = ref([]);
 const loading = ref(true);
+const selectedFilter = ref('all');
 const router = useRouter();
 const authStore = useAuthStore();
 
 const fetchActivities = async () => {
+    loading.value = true;
     try {
         const res = await api.get('/admin/activities');
-        activities.value = res.data.data;
+        activities.value = res.data.data || res.data;
     } catch (err) {
         console.error('Fetch activities error', err);
     } finally {
@@ -66,15 +78,22 @@ const fetchActivities = async () => {
     }
 };
 
+const filteredActivities = computed(() => {
+    if (selectedFilter.value === 'all') {
+        return activities.value;
+    }
+    return activities.value.filter(a => a.action === selectedFilter.value);
+});
+
 const formatAction = (action) => {
     const actions = {
         'post': 'Publication',
-        'like': 'Mention J\'aime',
+        'like': 'Like',
         'commentaire': 'Commentaire',
         'follow': 'Abonnement',
-        'follow_back': 'Abonnement en retour',
+        'follow_back': 'Follow back',
         'inscription': 'Inscription',
-        'suppression_post': 'Suppression Post'
+        'suppression_post': 'Suppression'
     };
     return actions[action] || action;
 };
@@ -95,8 +114,8 @@ const formatActionIcon = (action) => {
 const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
+        day: 'numeric',
+        month: 'long',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -104,11 +123,12 @@ const formatDate = (dateStr) => {
 };
 
 const getAvatar = (user) => {
-    if (!user.photo_profil) return 'https://ui-avatars.com/api/?name=' + user.nom;
+    if (!user?.photo_profil) return `https://ui-avatars.com/api/?name=${user?.nom || 'U'}`;
     return user.photo_profil.startsWith('http') ? user.photo_profil : `${BASE_URL}/storage/${user.photo_profil}`;
 };
 
 const goToProfile = (user) => {
+    if (!user) return;
     router.push(`/${authStore.user.nom}/profil/${user.nom.replace(/ /g, '_')}`);
 };
 
@@ -117,68 +137,140 @@ onMounted(fetchActivities);
 
 <style scoped>
 .admin-activity-view {
-    padding: 20px 15px 80px;
-    max-width: 1200px;
-    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+    height: 100%;
+    margin: 0.75em;
 }
 
-.admin-header {
-    margin-bottom: 30px;
-    text-align: left;
-}
-
-.header-title {
+.view-header {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.header-title .material-symbols-rounded {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-}
-
-.header-title h2 {
-    font-size: 2rem;
+.page-title {
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-color);
-    margin: 0;
+    margin-bottom: 4px;
 }
 
-.header-subtitle {
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.select-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-icon {
+    position: absolute;
+    left: 12px;
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.arrow-icon {
+    position: absolute;
+    right: 12px;
+    color: var(--text-muted);
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 10px 40px 10px 40px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 160px;
+}
+
+.custom-select:hover {
+    background-color: var(--secondary-color);
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: var(--card-bg);
 }
 
 .activity-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    padding-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .activity-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .view-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
 }
 
 .activity-card {
     background: var(--card-bg);
-    border-radius: 16px;
-    padding: 20px;
     border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px; 
+    padding: 30px; 
+    transition: all 0.2s;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    min-height: 180px;
+    border-left: 4px solid var(--primary-color);
 }
 
-.activity-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    border-color: var(--primary-color);
+.activity-card.like {
+    border-left-color: #f02849;
+}
+
+.activity-card.commentaire {
+    border-left-color: #42b72a;
+}
+
+.activity-card.follow, .activity-card.follow_back {
+    border-left-color: #8b5cf6;
+}
+
+.activity-card.inscription {
+    border-left-color: #f59e0b;
+}
+
+.activity-card.suppression_post {
+    border-left-color: #ef4444;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .user-row {
@@ -186,15 +278,18 @@ onMounted(fetchActivities);
     align-items: center;
     gap: 12px;
     cursor: pointer;
-    flex: 1;
 }
 
-.card-avatar {
-    width: 45px;
-    height: 45px;
+.user-row:hover .user-name {
+    color: var(--primary-color);
+}
+
+.avatar-sm {
+    width: 50px; 
+    height: 50px; 
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--secondary-color);
+    border: 2px solid var(--card-bg);
 }
 
 .user-meta {
@@ -204,92 +299,80 @@ onMounted(fetchActivities);
 
 .user-name {
     font-weight: 700;
+    font-size: 0.95rem;
     color: var(--text-color);
-    font-size: 1rem;
     transition: color 0.2s;
 }
 
-.user-row:hover .user-name {
-    color: var(--primary-color);
-}
-
 .activity-date {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
 }
 
-.action-icon-bg {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+.action-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.8rem;
 }
 
-.action-icon-bg .material-symbols-rounded {
-    font-size: 20px;
+.action-badge .material-symbols-rounded {
+    font-size: 16px;
 }
 
-/* Action Specific Colors */
-.action-icon-bg.post { background: rgba(var(--primary-rgb, 24, 119, 242), 0.1); color: var(--primary-color); }
-.action-icon-bg.like { background: rgba(var(--error-rgb, 240, 40, 73), 0.1); color: var(--error); }
-.action-icon-bg.commentaire { background: rgba(var(--success-rgb, 66, 183, 42), 0.1); color: var(--success); }
-.action-icon-bg.follow, .action-icon-bg.follow_back { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-.action-icon-bg.inscription { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.action-icon-bg.suppression_post { background: rgba(var(--error-rgb, 240, 40, 73), 0.15); color: var(--error); }
+.action-badge.post { background: rgba(24, 119, 242, 0.1); color: var(--primary-color); }
+.action-badge.like { background: #fee2e2; color: #f02849; }
+.action-badge.commentaire { background: #d1fae5; color: #059669; }
+.action-badge.follow, .action-badge.follow_back { background: #ede9fe; color: #8b5cf6; }
+.action-badge.inscription { background: #fef3c7; color: #d97706; }
+.action-badge.suppression_post { background: #fee2e2; color: #dc2626; }
 
 .card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.action-row {
-    display: flex;
-    align-items: center;
-}
-
-.action-label {
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-muted);
+    background: var(--input-bg);
+    padding: 15px;
+    border-radius: 16px; 
+    border: 1px solid var(--border-color);
+    flex-grow: 1;
 }
 
 .activity-details {
-    font-size: 0.95rem;
     color: var(--text-color);
-    line-height: 1.4;
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .empty-state {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    background: var(--card-bg);
-    border-radius: 20px;
-    border: 2px dashed var(--border-color);
+    text-align: center;
+    padding: 60px;
     color: var(--text-muted);
-    gap: 15px;
 }
 
 .empty-icon {
-    font-size: 4rem;
-    opacity: 0.3;
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #d1d5db;
 }
 
-@media (max-width: 640px) {
-    .activity-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .header-title h2 {
-        font-size: 1.5rem;
-    }
+.loader-container {
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 </style>
