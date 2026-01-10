@@ -20,19 +20,25 @@ export const useAuthStore = defineStore('auth', {
             try {
                 await api.get('/sanctum/csrf-cookie', { baseURL: '/' });
 
-                const response = await api.post('/register', userData);
+                // If sending FormData (file upload), ensure multipart header is set
+                const config = (userData instanceof FormData)
+                    ? { headers: { 'Content-Type': 'multipart/form-data' } }
+                    : {};
+
+                const response = await api.post('/register', userData, config);
 
                 this.user = response.data.user?.data || response.data.user;
                 if (!this.user && response.data.data) this.user = response.data.data; // Fallback
-                
+
                 localStorage.setItem('pozterr_logged_in', 'true');
                 return response.data;
 
             } catch (err) {
-                this.error =
-                    err.response?.data?.message ||
-                    'Erreur lors de l’inscription';
-                throw err;
+                    // Log server response to help debugging validation errors (422)
+                    console.error('Register error response:', err.response?.data || err);
+
+                    this.error = err.response?.data?.message || 'Erreur lors de l’inscription';
+                    throw err;
             } finally {
                 this.loading = false;
             }
@@ -47,14 +53,12 @@ export const useAuthStore = defineStore('auth', {
                 await api.get('/sanctum/csrf-cookie', { baseURL: '/' });
 
                 const response = await api.post('/login', credentials);
-                console.log('Login raw response:', response.data);
 
                 // Handle potential Laravel API Resource wrapping ('data' key)
                 const userData = response.data.user?.data || response.data.user;
 
                 if (userData) {
                     this.user = userData;
-                    console.log('User logged in:', this.user);
                     localStorage.setItem('pozterr_logged_in', 'true');
                 } else {
                     console.error('Login success but user data missing in response:', response.data);

@@ -4,7 +4,7 @@
       <h1 class="logo clickable" @click="goHome">!Pozterr</h1>
       
       <div v-if="authStore.isAuthenticated && authStore.user" class="header-actions">
-        <!-- Search Bar (Desktop Only) -->
+        <!-- Barre de recherche pour le Desktop , elle est cachée quand je suis coté admin -->
         <div v-if="!authStore.user.is_admin" class="search-container desktop-only">
           <div class="search-input-wrapper">
             <span class="material-symbols-rounded search-icon">search</span>
@@ -16,6 +16,7 @@
               class="search-input" 
               placeholder="Rechercher un utilisateur..." 
             />
+            <!-- La croix s'affiche quand j'ai déjà écrit au moins 1 caractère dans la barre de recherche -->
             <span v-if="searchQuery.length > 1" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
           </div>
 
@@ -96,7 +97,7 @@
                   <img :src="getUserAvatar(user)" class="search-avatar" />
                   <div class="search-info">
                     <span class="search-username">{{ user.nom }}</span>
-                    <span class="search-email">{{ user.etablissement || 'Étudiant' }}</span>
+                    <span class="search-email">@{{ (user.slug || user.nom || '').toLowerCase().replace(/ /g, '_') }}</span>
                   </div>
                 </div>
               </div>
@@ -155,6 +156,12 @@
                       <span class="material-symbols-rounded">stars</span>
                     </div>
                     <span>Gamification</span>
+                  </div>
+                  <div v-if="route.name !== 'admin-reports'" class="dropdown-item" @click="navigateTo('/admin/signalements')">
+                    <div class="item-icon-bg">
+                      <span class="material-symbols-rounded">signal</span>
+                    </div>
+                    <span>Signalements</span>
                   </div>
                 </template>
 
@@ -304,7 +311,7 @@ const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value;
 };
 
-const goHome = () => {
+const  goHome = () => {
     router.push({ name: 'home', params: { nom_user: userSlug.value || 'user' } });
     showUserMenu.value = false;
 };

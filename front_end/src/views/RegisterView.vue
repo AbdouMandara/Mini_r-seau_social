@@ -4,7 +4,7 @@
       <div class="circle circle-1"></div>
       <div class="circle circle-2"></div>
     </div>
-    
+
     <div class="auth-card glass">
       <div class="auth-header">
         <h1 class="logo">Inscription</h1>
@@ -15,9 +15,9 @@
         <div class="input-block">
           <div class="input-wrapper" :class="{ 'focused': focusedField === 'nom', 'has-error': errors.nom }">
             <span class="material-symbols-rounded icon">person</span>
-            <input 
-              v-model="form.nom" 
-              type="text" 
+            <input
+              v-model="form.nom"
+              type="text"
               placeholder="Nom d'utilisateur"
               @focus="focusedField = 'nom'"
               @blur="focusedField = null"
@@ -32,10 +32,10 @@
         <div class="input-block">
           <div class="input-wrapper" :class="{ 'focused': focusedField === 'password', 'has-error': errors.password }">
             <span class="material-symbols-rounded icon">lock</span>
-            <input 
-              v-model="form.password" 
-              :type="showPassword ? 'text' : 'password'" 
-              placeholder="Mot de passe (8+ car.)"
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Mot de passe au moins 8 caractères"
               @focus="focusedField = 'password'"
               @blur="focusedField = null"
               required
@@ -50,55 +50,6 @@
         </div>
 
         <div class="input-block">
-          <div class="input-wrapper" :class="{ 'focused': focusedField === 'etablissement' }">
-            <span class="material-symbols-rounded icon">school</span>
-            <input 
-              v-model="form.etablissement" 
-              type="text" 
-              placeholder="Établissement"
-              @focus="focusedField = 'etablissement'"
-              @blur="focusedField = null"
-              required
-            >
-          </div>
-        </div>
-
-        <div class="input-block">
-          <div class="input-wrapper" :class="{ 'focused': focusedField === 'filiere' }">
-            <span class="material-symbols-rounded icon">category</span>
-            <select 
-              v-model="form.filiere" 
-              @focus="focusedField = 'filiere'"
-              @blur="focusedField = null"
-              required
-            >
-              <option value="" disabled>Filière</option>
-              <option value="GL">Génie Logiciel (GL)</option>
-              <option value="GLT">Génie Logiciel et Télécom (GLT)</option>
-              <option value="SWE">Software Engineering (SWE)</option>
-              <option value="MVC">Marketing Vente et Communication (MVC)</option>
-              <option value="LTM">Logistique et Transport Maritime (LTM)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="input-block">
-          <div class="input-wrapper" :class="{ 'focused': focusedField === 'niveau' }">
-            <span class="material-symbols-rounded icon">star</span>
-            <select 
-              v-model="form.niveau" 
-              @focus="focusedField = 'niveau'"
-              @blur="focusedField = null"
-              required
-            >
-              <option value="" disabled>Niveau</option>
-              <option value="1">Niveau 1</option>
-              <option value="2">Niveau 2</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="input-block">
           <div class="file-upload-premium" @click="$refs.fileInput.click()">
             <div v-if="!previewUrl" class="upload-placeholder">
               <span class="material-symbols-rounded">add_a_photo</span>
@@ -109,9 +60,9 @@
                 <div class="change-overlay">Changer</div>
             </div>
           </div>
-          <input 
+          <input
             ref="fileInput"
-            type="file" 
+            type="file"
             style="display: none"
             accept="image/*"
             @change="handleFileChange"
@@ -154,9 +105,6 @@ const showPassword = ref(false);
 const form = reactive({
   nom: '',
   password: '',
-  etablissement: '',
-  filiere: '',
-  niveau: '',
   photo_profil: null
 });
 
@@ -166,7 +114,7 @@ const validateInput = (field) => {
     else if (form.nom.length < 3) errors.value.nom = ['Trop court au moins 3 caractères'];
     else delete errors.value.nom;
   }
-  
+
   if (field === 'password') {
     if (!form.password) errors.value.password = ['Requis'];
     else if (form.password.length < 8) errors.value.password = ['Minimum 8 caractères.'];
@@ -199,9 +147,6 @@ const handleRegister = async () => {
   const formData = new FormData();
   formData.append('nom', form.nom);
   formData.append('password', form.password);
-  formData.append('etablissement', form.etablissement);
-  formData.append('filiere', form.filiere);
-  formData.append('niveau', form.niveau);
   formData.append('photo_profil', form.photo_profil);
 
   try {

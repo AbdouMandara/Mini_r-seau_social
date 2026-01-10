@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class AdminSeeder extends Seeder
@@ -20,7 +19,6 @@ class AdminSeeder extends Seeder
             'nom' => $nom,
             'password' => $password,
             'is_admin' => true,
-            'region' => 'Centre', // Valeur par défaut requise
             'photo_profil' => 'https://ui-avatars.com/api/?name=' . urlencode($nom),
         ]);
     }

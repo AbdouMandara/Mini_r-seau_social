@@ -25,31 +25,9 @@
             </select>
           </div>
 
-          <div class="filter-group">
-            <span class="material-symbols-rounded">category</span>
-            <select v-model="filters.filiere" @change="fetchPosts">
-              <option value="">Toutes les filières</option>
-              <option value="GL">GL</option>
-              <option value="GLT">GLT</option>
-              <option value="SWE">SWE</option>
-              <option value="MVC">MVC</option>
-              <option value="LTM">LTM</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <span class="material-symbols-rounded">school</span>
-            <input 
-              type="text" 
-              v-model="filters.etablissement" 
-              placeholder="Établissement..." 
-              @input="handleEtablissementSearch"
-              class="filter-input"
-            />
-          </div>
         </div>
 
-        <button v-if="filters.tag || filters.filiere || filters.etablissement" class="btn-reset" @click="resetFilters">
+        <button v-if="filters.tag" class="btn-reset" @click="resetFilters">
           <span class="material-symbols-rounded">restart_alt</span>
         </button>
       </div>
@@ -122,18 +100,10 @@ const page = ref(1);
 const hasMore = ref(true);
 
 const filters = reactive({
-  tag: '',
-  filiere: '',
-  etablissement: ''
+  tag: ''
 });
 
-let etablissementTimeout = null;
-const handleEtablissementSearch = () => {
-    if (etablissementTimeout) clearTimeout(etablissementTimeout);
-    etablissementTimeout = setTimeout(() => {
-        fetchPosts(false);
-    }, 500);
-};
+
 
 const openComments = (post) => {
   activePostId.value = post.id_post;
@@ -142,8 +112,6 @@ const openComments = (post) => {
 
 const resetFilters = () => {
   filters.tag = '';
-  filters.filiere = '';
-  filters.etablissement = '';
   fetchPosts(false);
 };
 
@@ -159,8 +127,6 @@ const fetchPosts = async (append = false) => {
   try {
     const params = { page: page.value };
     if (filters.tag) params.tag = filters.tag;
-    if (filters.filiere) params.filiere = filters.filiere;
-    if (filters.etablissement) params.etablissement = filters.etablissement;
 
     const res = await api.get('/posts', { params });
     const responseData = res.data.data || res.data;

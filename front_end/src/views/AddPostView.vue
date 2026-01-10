@@ -71,24 +71,6 @@
             </datalist>
           </div>
 
-          <div class="input-group">
-            <label>Filière</label>
-            <select v-model="form.filiere" class="input-control" required>
-              <option value="GL">GL</option>
-              <option value="GLT">GLT</option>
-              <option value="SWE">SWE</option>
-              <option value="MVC">MVC</option>
-              <option value="LTM">LTM</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Niveau</label>
-            <select v-model="form.niveau" class="input-control" required>
-              <option value="1">Niveau 1</option>
-              <option value="2">Niveau 2</option>
-            </select>
-          </div>
         </div>
 
         <div class="input-group toggle-group">
@@ -130,8 +112,6 @@ const form = reactive({
   img_post: null,
   allow_comments: true,
   tag: '',
-  filiere: authStore.user?.filiere || 'GL',
-  niveau: authStore.user?.niveau || '1',
   matiere: ''
 });
 
@@ -155,8 +135,6 @@ const loadPostData = async () => {
     form.description = post.description || '';
     form.allow_comments = post.allow_comments;
     form.tag = post.tag || '';
-    form.filiere = post.filiere || '';
-    form.niveau = post.niveau || '';
     form.matiere = post.matiere || '';
     
     if (post.img_post) {
@@ -187,8 +165,6 @@ const handleSubmit = async () => {
   const formData = new FormData();
   formData.append('description', form.description);
   formData.append('tag', form.tag);
-  formData.append('filiere', form.filiere);
-  formData.append('niveau', form.niveau);
   formData.append('matiere', form.matiere || '');
 
   if (form.img_post instanceof File) {

@@ -37,7 +37,7 @@
           :class="post.tag"
           @click="filterByTag(post.tag)"
         >#{{ post.tag }}</span>
-        <span class="info-badge">{{ post.filiere }} | Niv. {{ post.niveau }}</span>
+
         <span v-if="post.matiere" class="matiere-badge">📚 {{ post.matiere }}</span>
       </div>
       

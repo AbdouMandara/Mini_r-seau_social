@@ -27,9 +27,6 @@ class UserFactory extends Factory
             'nom' => fake()->name(),
             'password' => static::$password ??= 'password',
             'photo_profil' => 'images/profil_user/default.jpg',
-            'etablissement' => 'UY1',
-            'filiere' => 'GL',
-            'niveau' => '1',
             'bio' => fake()->sentence(),
             'remember_token' => Str::random(10),
         ];

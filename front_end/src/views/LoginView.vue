@@ -1,10 +1,11 @@
 <template>
+  <!-- Les cercles bleus de design dans ma page de login -->
   <div class="auth-page">
     <div class="circles">
       <div class="circle circle-1"></div>
       <div class="circle circle-2"></div>
     </div>
-    
+
     <div class="auth-card glass">
       <div class="auth-header">
         <h1 class="logo">Connexion</h1>
@@ -15,9 +16,9 @@
         <div class="input-block">
           <div class="input-wrapper" :class="{ 'focused': focusedField === 'nom', 'has-error': errors.nom }">
             <span class="material-symbols-rounded icon">person</span>
-            <input 
-              v-model="form.nom" 
-              type="text" 
+            <input
+              v-model="form.nom"
+              type="text"
               placeholder="Nom d'utilisateur"
               @focus="focusedField = 'nom'"
               @blur="focusedField = null"
@@ -32,9 +33,9 @@
         <div class="input-block">
           <div class="input-wrapper" :class="{ 'focused': focusedField === 'password', 'has-error': errors.password }">
             <span class="material-symbols-rounded icon">lock</span>
-            <input 
-              v-model="form.password" 
-              :type="showPassword ? 'text' : 'password'" 
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
               placeholder="Mot de passe"
               @focus="focusedField = 'password'"
               @blur="focusedField = null"
@@ -48,7 +49,7 @@
             <span v-if="errors.password" class="error-msg">{{ errors.password }}</span>
           </Transition>
         </div>
-
+        <!-- Erreur technique donc qui n'est pas lié au user -->
         <p v-if="error" class="error-msg central">{{ error }}</p>
 
         <button type="submit" class="btn btn-primary btn-auth" :disabled="loading">
@@ -104,7 +105,7 @@ watch(() => form.password, () => validateInput('password'));
 const handleLogin = async () => {
   validateInput('nom');
   validateInput('password');
-  
+
   if (errors.nom || errors.password) return;
 
   loading.value = true;
@@ -112,7 +113,7 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(form);
-    
+
     const user = authStore.user;
     if (!user) throw new Error('Utilisateur non trouvé après connexion');
 
@@ -120,7 +121,6 @@ const handleLogin = async () => {
         router.push('/admin/dashboard');
         return;
     }
-
     const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
     router.push(`/${username}/home`);
   } catch (err) {

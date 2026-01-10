@@ -40,8 +40,8 @@ const router = createRouter({
     },
     {
       path: '/profil',
-      redirect: to => {
-        const authStore = useAuthStore();
+      redirect: () => {
+        const authStore = useAuthStore(); // 'to' is not used, but it's part of the redirect function signature.
         return authStore.user ? `/${authStore.user.nom}/profil` : '/login';
       }
     },
@@ -93,26 +93,16 @@ const router = createRouter({
       component: () => import('@/views/BlockedUserView.vue'),
       meta: { auth: true }
     },
-    
+
     {
       path: '/:nom_user/add_post',
       name: 'add-post',
       component: () => import('@/views/AddPostView.vue'),
       meta: { auth: true }
-    },
-    {
-      path: '/:nom_user/edit_post/:postId',
-      name: 'edit-post',
-      // ... (content replaced by previous call but I need to make sure I don't break JSON structure) 
-      // Actually I missed re-adding add-post in previous call so I will add it back here
-      // And update the guards
-      component: () => import('@/views/AddPostView.vue'),
-      meta: { auth: true }
-      }
-    ]
-    // ... admin routes are already there
-  });
-  
+    }
+  ]
+});
+
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
@@ -123,6 +113,7 @@ router.beforeEach(async (to, from, next) => {
         await authStore.fetchProfile();
     } catch (error) {
         // Token likely invalid or session expired
+        console.error('Failed to fetch profile:', error);
         authStore.user = null;
         localStorage.removeItem('pozterr_logged_in');
         next('/login');

@@ -15,8 +15,6 @@ class PostFactory extends Factory
         return [
             'description' => fake()->text(100),
             'tag' => 'etude',
-            'filiere' => 'GL',
-            'niveau' => '1',
             'id_user' => User::factory(),
             'allow_comments' => true,
         ];

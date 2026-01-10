@@ -33,7 +33,7 @@
     <div v-else class="activity-grid">
       <div v-for="activity in filteredActivities" :key="activity.id_activity" class="activity-card" :class="activity.action">
         <div class="card-header">
-            <div class="user-row" @click="goToProfile(activity.user)">
+            <div class="user-row">
                 <img :src="getAvatar(activity.user)" class="avatar-sm" />
                 <div class="user-meta">
                     <span class="user-name">{{ activity.user?.nom || 'Utilisateur' }}</span>
@@ -125,11 +125,6 @@ const formatDate = (dateStr) => {
 const getAvatar = (user) => {
     if (!user?.photo_profil) return `https://ui-avatars.com/api/?name=${user?.nom || 'U'}`;
     return user.photo_profil.startsWith('http') ? user.photo_profil : `${BASE_URL}/storage/${user.photo_profil}`;
-};
-
-const goToProfile = (user) => {
-    if (!user) return;
-    router.push(`/${authStore.user.nom}/profil/${user.nom.replace(/ /g, '_')}`);
 };
 
 onMounted(fetchActivities);
@@ -246,26 +241,6 @@ onMounted(fetchActivities);
     border-left: 4px solid var(--primary-color);
 }
 
-.activity-card.like {
-    border-left-color: #f02849;
-}
-
-.activity-card.commentaire {
-    border-left-color: #42b72a;
-}
-
-.activity-card.follow, .activity-card.follow_back {
-    border-left-color: #8b5cf6;
-}
-
-.activity-card.inscription {
-    border-left-color: #f59e0b;
-}
-
-.activity-card.suppression_post {
-    border-left-color: #ef4444;
-}
-
 .card-header {
     display: flex;
     justify-content: space-between;
@@ -277,12 +252,8 @@ onMounted(fetchActivities);
     display: flex;
     align-items: center;
     gap: 12px;
-    cursor: pointer;
 }
 
-.user-row:hover .user-name {
-    color: var(--primary-color);
-}
 
 .avatar-sm {
     width: 50px; 

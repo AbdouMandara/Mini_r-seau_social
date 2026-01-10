@@ -1,7 +1,7 @@
 <template>
   <div class="app-wrapper">
     <!-- Main Header -->
-    <MainHeader 
+    <MainHeader
       :unread-count="unreadCount"
       :is-blocked-page="isBlockedPage"
       :is-full-width-page="isFullWidthPage"
@@ -11,14 +11,14 @@
     />
 
     <!-- Notifications Drawer -->
-    <NotificationDrawer 
+    <NotificationDrawer
       :show="showNotifs"
       :notifications="notifications"
       @close="showNotifs = false"
     />
 
     <!-- Mobile Menu Drawer -->
-    <MobileMenu 
+    <MobileMenu
       :show="showMobileMenu"
       :unread-count="unreadCount"
       @close="showMobileMenu = false"
@@ -119,9 +119,9 @@ const fetchNotifications = async () => {
           toast: true,
           position: 'top-end',
           icon: 'info',
-          title: latest.type === 'follow' ? `${latest.author?.nom} a commencé à vous suivre` : 
+          title: latest.type === 'follow' ? `${latest.author?.nom} a commencé à vous suivre` :
                  latest.type === 'follow_back' ? `${latest.author?.nom} vous a suivi en retour` :
-                 latest.type === 'post_filiere' ? `Nouveau post de ${latest.author?.nom} en ${latest.author?.filiere}` :
+
                  latest.type === 'report' ? `Nouveau signalement de ${latest.author?.nom}` :
                  latest.type === 'new_user' ? `Nouvelle inscription : ${latest.author?.nom}` :
                  `${latest.author?.nom} a interagi avec votre post`,
@@ -159,9 +159,18 @@ const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value;
 };
 
-const openNotifsFromMobile = () => {
+const openNotifsFromMobile = async () => {
   showMobileMenu.value = false;
   showNotifs.value = true;
+  // Mark notifications as read when opening from mobile
+  if (unreadCount.value > 0) {
+    try {
+      await api.post('/notifications/read');
+      notifications.value.forEach(n => n.is_read = true);
+    } catch (err) {
+      console.error('Mark as read error', err);
+    }
+  }
 };
 
 onMounted(() => {
@@ -180,8 +189,6 @@ onMounted(() => {
 }
 
 .main-container {
-  padding-top: 20px;
-  padding-bottom: 80px;
   min-height: calc(100vh - 60px);
 }
 

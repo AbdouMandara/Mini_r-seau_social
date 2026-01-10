@@ -20,7 +20,7 @@
     </div>
 
     <div v-if="loading" class="loader-container">
-        <div class="spinner"></div>
+        <Loader />
     </div>
 
     <div v-else-if="filteredReports.length === 0" class="empty-state">
@@ -69,6 +69,7 @@
 import { ref, computed, onMounted } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import Swal from 'sweetalert2';
+import { Loader } from "@/components/Loader.vue";
 
 const reports = ref([]);
 const loading = ref(true);
@@ -90,6 +91,8 @@ const filteredReports = computed(() => {
     if (selectedFilter.value === 'all') {
         return reports.value;
     }
+    console.log(reports.value);
+    
     return reports.value.filter(r => r.status === selectedFilter.value);
 });
 

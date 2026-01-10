@@ -87,14 +87,6 @@
         <div class="profile-bio-new">
           <div class="bio-meta-grid">
             <span class="meta-item">
-              <span class="material-symbols-rounded">school</span>
-              {{ user.etablissement || 'Étudiant' }}
-            </span>
-            <span class="meta-item">
-              <span class="material-symbols-rounded">category</span>
-              {{ user.filiere }} (Niv. {{ user.niveau }})
-            </span>
-            <span class="meta-item">
               <span class="material-symbols-rounded">calendar_today</span>
               Depuis {{ new Date(user.created_at).getFullYear() }}
             </span>
@@ -263,39 +255,6 @@
                 </div>
               </div>
               
-              <div class="modern-input-group">
-                <label>Établissement</label>
-                <div class="input-wrapper">
-                  <span class="material-symbols-rounded icon">school</span>
-                  <input v-model="editForm.etablissement" placeholder="Ex: Université de Yaoundé I" required>
-                </div>
-              </div>
-
-              <div class="modern-input-group">
-                <label>Filière</label>
-                <div class="input-wrapper">
-                  <span class="material-symbols-rounded icon">category</span>
-                  <select v-model="editForm.filiere" class="modern-select" required>
-                    <option value="GL">GL</option>
-                    <option value="GLT">GLT</option>
-                    <option value="SWE">SWE</option>
-                    <option value="MVC">MVC</option>
-                    <option value="LTM">LTM</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="modern-input-group">
-                <label>Niveau</label>
-                <div class="input-wrapper">
-                  <span class="material-symbols-rounded icon">star</span>
-                  <select v-model="editForm.niveau" class="modern-select" required>
-                    <option value="1">Niveau 1</option>
-                    <option value="2">Niveau 2</option>
-                  </select>
-                </div>
-              </div>
-              
               <div class="modern-input-group full-width">
                 <label>Bio</label>
                 <textarea v-model="editForm.bio" placeholder="Dites-en plus sur vous..." rows="3"></textarea>
@@ -354,9 +313,6 @@ const editLoading = ref(false);
 const editPreviewUrl = ref(null);
 const editForm = reactive({
     nom: '',
-    etablissement: '',
-    filiere: '',
-    niveau: '',
     bio: '',
     photo: null
 });
@@ -551,9 +507,6 @@ const fetchInteractions = async () => {
 
 const openEditModal = () => {
     editForm.nom = user.value.nom;
-    editForm.etablissement = user.value.etablissement || '';
-    editForm.filiere = user.value.filiere || 'GL';
-    editForm.niveau = user.value.niveau || '1';
     editForm.bio = user.value.bio || '';
     editForm.photo = null;
     editPreviewUrl.value = null;
@@ -573,9 +526,6 @@ const handleEditProfile = async () => {
     try {
         const formData = new FormData();
         formData.append('nom', editForm.nom);
-        formData.append('etablissement', editForm.etablissement);
-        formData.append('filiere', editForm.filiere);
-        formData.append('niveau', editForm.niveau);
         formData.append('bio', editForm.bio);
         if (editForm.photo) {
             formData.append('photo_profil', editForm.photo);
