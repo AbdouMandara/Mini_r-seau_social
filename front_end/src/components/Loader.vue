@@ -4,6 +4,9 @@
   </div>
 </template>
 
+<script setup>
+</script>
+
 <style scoped>
 .loader-container {
   display: flex;

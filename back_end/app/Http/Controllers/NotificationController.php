@@ -10,7 +10,7 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $notifications = Notification::where('id_user_target', $request->user()->id)
-            ->with(['author', 'post'])
+            ->with(['author', 'post', 'badge'])
             ->latest()
             ->get();
 

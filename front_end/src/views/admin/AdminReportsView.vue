@@ -1,3 +1,4 @@
+<!--  C'est pour les signalements qui ont été fait sur le posts des gens -->
 <template>
   <div class="admin-reports-view">
     <div class="view-header">
@@ -20,7 +21,7 @@
     </div>
 
     <div v-if="loading" class="loader-container">
-        <Loader />
+        <AppLoader />
     </div>
 
     <div v-else-if="filteredReports.length === 0" class="empty-state">
@@ -45,8 +46,8 @@
         
         <div class="card-body">
             <div class="report-target">
-                <span class="target-label">Cible :</span>
-                <span v-if="report.post" class="target-value">Post de {{ report.post.user?.nom }}</span>
+                <span class="target-label">Post de </span>
+                <span v-if="report.post" class="target-value"> {{ report.post.user?.nom }}</span>
                 <span v-else-if="report.reported_user" class="target-value">Utilisateur {{ report.reported_user?.nom }}</span>
             </div>
             <p class="report-reason">"{{ report.reason }}"</p>
@@ -69,7 +70,7 @@
 import { ref, computed, onMounted } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import Swal from 'sweetalert2';
-import { Loader } from "@/components/Loader.vue";
+import AppLoader from "../../components/Loader.vue";
 
 const reports = ref([]);
 const loading = ref(true);
@@ -177,6 +178,8 @@ onMounted(fetchReports);
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    max-width: 240px;
 }
 
 .filter-icon {
@@ -209,7 +212,7 @@ onMounted(fetchReports);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 160px;
+    width: 100%;
 }
 
 .custom-select:hover {

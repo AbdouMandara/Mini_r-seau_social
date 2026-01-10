@@ -18,6 +18,7 @@ class Notification extends Model
         'id_user_target',
         'id_user_author',
         'id_post',
+        'id_badge',
         'type',
         'is_read'
     ];
@@ -39,5 +40,10 @@ class Notification extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'id_post');
+    }
+
+    public function badge(): BelongsTo
+    {
+        return $this->belongsTo(Badge::class, 'id_badge');
     }
 }

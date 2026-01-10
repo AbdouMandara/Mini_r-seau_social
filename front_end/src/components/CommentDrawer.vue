@@ -8,7 +8,7 @@
 
       <div class="comments-body">
         <div v-if="loading" class="drawer-loader">
-          <Loader />
+          <AppLoader />
         </div>
         
         <div v-else class="comments-list" @click="handleMentionClick">
@@ -67,7 +67,7 @@ import { ref, onMounted, watch } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
-import Loader from '@/components/Loader.vue';
+import AppLoader from '@/components/Loader.vue';
 import Swal from 'sweetalert2';
 
 const props = defineProps(['isOpen', 'postId']);

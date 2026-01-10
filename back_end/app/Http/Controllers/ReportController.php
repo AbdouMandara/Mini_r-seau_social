@@ -12,7 +12,7 @@ class ReportController extends Controller
     // Admin: Get all reports
     public function index()
     {
-        $reports = Report::with(['reporter', 'post', 'reportedUser'])
+        $reports = Report::with(['reporter', 'post.user', 'reportedUser'])
                          ->orderBy('created_at', 'desc')
                          ->get();
         return response()->json($reports);

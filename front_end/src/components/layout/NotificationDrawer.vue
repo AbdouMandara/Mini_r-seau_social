@@ -1,43 +1,64 @@
 <template>
-  <Transition name="slide">
-    <div v-if="show" class="notif-drawer card">
-      <div class="drawer-header">
-        <h3>Notifications</h3>
-        <button class="close-btn" @click="$emit('close')">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      </div>
-      <div class="drawer-body">
-        <div v-if="notifications.length === 0" class="empty-notifs">
-          <p>Aucune notification</p>
-        </div>
-        <div v-for="n in notifications" :key="n.id_notif" class="notif-item" :class="{ 'unread': !n.is_read }">
-          <img :src="getAuthorAvatar(n.author)" class="notif-avatar" />
-          <div class="notif-content">
-            <p v-if="n.type === 'follow'"><strong>{{ n.author?.nom }}</strong> a commencé à vous suivre</p>
-            <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author?.nom }}</strong> vous a suivi en retour</p>
-            <p v-else-if="n.type === 'mention'"><strong>{{ n.author?.nom }}</strong> vous a mentionné dans un post</p>
+  <Transition name="fade">
+    <div v-if="show" class="drawer-overlay" @click.self="$emit('close')">
+      <Transition name="slide">
+        <div v-if="show" class="notif-drawer card">
+          <div class="drawer-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" @click="$emit('close')">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+          <div class="drawer-body">
+            <div v-if="notifications.length === 0" class="empty-notifs">
+              <p>Aucune notification</p>
+            </div>
+            <div v-for="n in notifications" :key="n.id_notif" class="notif-item" :class="{ 'unread': !n.is_read }">
+              <img :src="getAuthorAvatar(n.author)" class="notif-avatar" />
+              <div class="notif-content">
+                <p v-if="n.type === 'follow'"><strong>{{ n.author?.nom }}</strong> a commencé à vous suivre</p>
+                <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author?.nom }}</strong> vous a suivi en retour</p>
+                <p v-else-if="n.type === 'mention'"><strong>{{ n.author?.nom }}</strong> vous a mentionné dans un post</p>
 
-            <p v-else-if="n.type === 'report'"><strong>{{ n.author?.nom }}</strong> a soumis un signalement</p>
-            <p v-else-if="n.type === 'new_user'"><strong>{{ n.author?.nom }}</strong> vient de s'inscrire</p>
-            <p v-else><strong>{{ n.author?.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
-            <span v-if="n.post" class="post-preview">"{{ n.post.description?.substring(0, 30) }}..."</span>
+                <p v-else-if="n.type === 'report'"><strong>{{ n.author?.nom }}</strong> a soumis un signalement</p>
+                <p v-else-if="n.type === 'new_user'"><strong>{{ n.author?.nom }}</strong> vient de s'inscrire</p>
+                <p v-else-if="n.type === 'badge'">
+                  Félicitations ! Vous avez reçu le badge <strong>{{ n.badge?.name }}</strong>
+                </p>
+                <p v-else><strong>{{ n.author?.nom }}</strong> a {{ n.type === 'like' ? 'liké' : 'commenté' }} votre post</p>
+                
+                <div v-if="n.type === 'badge'" class="badge-notif-preview" :style="{ color: n.badge?.color }">
+                   <span class="material-symbols-rounded">{{ n.badge?.icon || 'stars' }}</span>
+                </div>
+                <span v-else-if="n.post" class="post-preview">"{{ n.post.description?.substring(0, 30) }}..."</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </Transition>
     </div>
   </Transition>
 </template>
 
 <script setup>
+import { watch } from 'vue';
 import { BASE_URL } from '@/utils/api';
 
-defineProps({
+const props = defineProps({
   show: { type: Boolean, default: false },
   notifications: { type: Array, default: () => [] }
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
+
+// Handle scroll locking
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
 
 const getAuthorAvatar = (author) => {
   if (!author) return 'https://ui-avatars.com/api/?name=U';
@@ -51,7 +72,6 @@ const getAuthorAvatar = (author) => {
 <style scoped>
 .notif-drawer {
   position: fixed;
-  top: 60px;
   right: 0;
   width: 360px;
   max-width: 90vw;
@@ -155,6 +175,48 @@ const getAuthorAvatar = (author) => {
   font-style: italic;
 }
 
+.badge-notif-preview {
+  font-size: 2rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Overlay */
+.drawer-overlay {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 299;
+  backdrop-filter: blur(2px);
+}
+
+.notif-drawer {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  height: calc(100vh - 60px);
+  z-index: 300;
+  overflow-y: auto;
+  border-radius: 0;
+}
+
+/* Fade transition for overlay */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide transition for drawer */
 .slide-enter-active, .slide-leave-active {
   transition: transform 0.3s ease;
 }

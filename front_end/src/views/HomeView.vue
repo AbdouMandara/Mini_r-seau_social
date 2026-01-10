@@ -1,43 +1,30 @@
 <template>
   <div class="home-view">
     <div v-if="loading" class="feed-container">
-      <div class="filter-bar card">
-        <div class="skeleton-line full-width"></div>
-      </div>
       <div class="posts-feed">
         <PostSkeleton v-for="i in 3" :key="i" />
       </div>
     </div>
     
     <div v-else class="feed-container">
-      <div class="filter-bar card">
-        <div class="filter-scroll-container">
-          <div class="filter-group">
-            <span class="material-symbols-rounded">filter_list</span>
-            <select v-model="filters.tag" @change="fetchPosts">
-              <option value="">Tous les tags</option>
-              <option value="etude">Étude</option>
-              <option value="divertissement">Divertissement</option>
-              <option value="info">Information</option>
-              <option value="programmation">Programmation</option>
-              <option value="maths">Mathématiques</option>
-              <option value="devoir">Devoir</option>
-            </select>
-          </div>
-
-        </div>
-
-        <button v-if="filters.tag" class="btn-reset" @click="resetFilters">
-          <span class="material-symbols-rounded">restart_alt</span>
+      <!-- Hashtag Filter Header -->
+      <div v-if="filters.tag" class="hashtag-filter-header card">
+        <h2 class="hashtag-title">
+          <span class="material-symbols-rounded">tag</span>
+          Tous les posts avec #{{ filters.tag }}
+        </h2>
+        <button class="btn-close-filter" @click="resetFilters" title="Fermer">
+          <span class="material-symbols-rounded">close</span>
         </button>
       </div>
 
       <div v-if="posts.length === 0" class="empty-state card">
         <div class="empty-icon">📭</div>
-        <p>Aucun post ne correspond à vos critères.</p>
+        <p v-if="filters.tag">Aucun post avec le hashtag #{{ filters.tag }}</p>
+        <p v-else>Aucun post disponible pour le moment.</p>
         <br>
-        <button class="btn btn-primary" @click="resetFilters">
-          Voir tout
+        <button v-if="filters.tag" class="btn btn-primary" @click="resetFilters">
+          Voir tous les posts
         </button>
       </div>
 
@@ -53,7 +40,7 @@
           
           <!-- Infinite Scroll Trigger -->
           <div ref="scrollTrigger" class="scroll-trigger">
-            <Loader v-if="loadingMore" />
+            <AppLoader v-if="loadingMore" />
             <p v-else-if="!hasMore && posts.length > 0" class="no-more">Vous avez tout vu ! ✨</p>
           </div>
         </div>
@@ -81,7 +68,7 @@ import api from '@/utils/api';
 import PostCard from '@/components/PostCard.vue';
 import PostSkeleton from '@/components/PostSkeleton.vue';
 import CommentDrawer from '@/components/CommentDrawer.vue';
-import Loader from '@/components/Loader.vue';
+import AppLoader from '@/components/Loader.vue';
 import TrendingSidebar from '@/components/layout/TrendingSidebar.vue';
 
 const authStore = useAuthStore();
@@ -251,77 +238,56 @@ onUnmounted(() => {
     margin-bottom: 20px;
 }
 
-.filter-bar {
+/* Hashtag Filter Header */
+.hashtag-filter-header {
     max-width: 600px;
     margin: 0 10px 20px;
-    padding: 10px 15px;
+    padding: 15px 20px;
     display: flex;
-    gap: 10px;
     align-items: center;
+    justify-content: space-between;
+    gap: 15px;
     background: var(--card-bg);
     border-radius: 12px;
-    overflow: hidden;
+    border-left: 4px solid var(--primary-color);
 }
 
-.filter-scroll-container {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    flex: 1;
-    padding: 5px 0;
-    -webkit-overflow-scrolling: touch;
-}
-
-.filter-scroll-container::-webkit-scrollbar {
-    display: none;
-}
-
-.filter-group {
+.hashtag-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--text-muted);
-    white-space: nowrap;
-    background: var(--input-bg);
-    padding: 6px 12px;
-    border-radius: 20px;
-    flex-shrink: 0;
-}
-
-.filter-group select, .filter-input {
-    border: none;
-    background: none;
-    font-weight: 600;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.85rem;
-    outline: none;
+    margin: 0;
 }
 
-.filter-input {
-    width: 100px;
+.hashtag-title .material-symbols-rounded {
+    color: var(--primary-color);
 }
 
-.btn-reset {
+.btn-close-filter {
     background: var(--input-bg);
     border: none;
-    color: var(--error);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
-    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.btn-close-filter:hover {
+    background: var(--error);
+    color: white;
 }
 
 @media (min-width: 768px) {
-    .filter-bar {
-        margin: 0 0 20px; /* Aligné à gauche sur desktop */
-    }
-    .filter-input {
-        width: 150px;
+    .hashtag-filter-header {
+        margin: 0 0 20px;
     }
 }
 

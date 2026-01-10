@@ -45,6 +45,9 @@ class LikeController extends Controller
             ]);
         }
 
+        // Check for new badges for the post author
+        \App\Services\BadgeService::checkBadges($post->user);
+
         $likesCount = $post->likes()->count();
         
         // Broadcast the event

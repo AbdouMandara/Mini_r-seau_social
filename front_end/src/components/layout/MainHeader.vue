@@ -14,7 +14,7 @@
               @input="handleSearch" 
               @focus="showSearchOverlay = true"
               class="search-input" 
-              placeholder="Rechercher un utilisateur..." 
+              placeholder="Rechercher (@user ou #tag)..." 
             />
             <!-- La croix s'affiche quand j'ai déjà écrit au moins 1 caractère dans la barre de recherche -->
             <span v-if="searchQuery.length > 1" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
@@ -25,6 +25,17 @@
               <div v-if="searching" class="loader-container">
                 <Loader />
               </div>
+              <!-- Hashtag Search Result -->
+              <div v-if="isHashtagSearch" class="hashtag-search-result" @click="navigateToHashtag">
+                <div class="hashtag-icon">
+                  <span class="material-symbols-rounded">tag</span>
+                </div>
+                <div class="hashtag-info">
+                  <span class="hashtag-text">{{ searchQuery }}</span>
+                  <span class="hashtag-hint">Voir tous les posts avec ce hashtag</span>
+                </div>
+              </div>
+              <!-- User Results -->
               <div v-else-if="searchResults.length === 0" class="no-results">
                 Aucun utilisateur trouvé
               </div>
@@ -73,7 +84,7 @@
                   v-model="searchQuery" 
                   @input="handleSearch" 
                   class="search-input" 
-                  placeholder="Rechercher un utilisateur..." 
+                  placeholder="Rechercher (@user ou #tag)..." 
                   autoFocus
                 />
                 <span v-if="searchQuery.length > 0" class="material-symbols-rounded clear-icon" @click="clearSearch">close</span>
@@ -83,6 +94,16 @@
             <div class="search-results-content">
               <div v-if="searching" class="loader-container">
                 <Loader />
+              </div>
+              <!-- Hashtag result for mobile -->
+              <div v-if="isHashtagSearch" class="hashtag-search-result" @click="navigateToHashtag">
+                <div class="hashtag-icon">
+                  <span class="material-symbols-rounded">tag</span>
+                </div>
+                <div class="hashtag-info">
+                  <span class="hashtag-text">{{ searchQuery }}</span>
+                  <span class="hashtag-hint">Voir tous les posts avec ce hashtag</span>
+                </div>
               </div>
               <div v-else-if="searchQuery.trim() !== '' && searchResults.length === 0" class="no-results">
                 Aucun utilisateur trouvé
@@ -237,6 +258,7 @@ const searchResults = ref([]);
 const showSearchOverlay = ref(false);
 const showMobileSearch = ref(false);
 const searching = ref(false);
+const isHashtagSearch = ref(false);
 let searchTimeout = null;
 
 const userSlug = computed(() => {
@@ -276,9 +298,22 @@ const handleSearch = () => {
   
   if (searchQuery.value.trim() === '') {
     searchResults.value = [];
+    isHashtagSearch.value = false;
     return;
   }
   
+  // Check if it's a hashtag search
+  if (searchQuery.value.trim().startsWith('#')) {
+    isHashtagSearch.value = true;
+    searching.value = false;
+    searchResults.value = [];
+    if (!showMobileSearch.value) {
+      showSearchOverlay.value = true;
+    }
+    return;
+  }
+  
+  isHashtagSearch.value = false;
   searching.value = true;
   if (!showMobileSearch.value) {
     showSearchOverlay.value = true;
@@ -300,6 +335,21 @@ const clearSearch = () => {
   searchQuery.value = '';
   searchResults.value = [];
   showSearchOverlay.value = false;
+  isHashtagSearch.value = false;
+};
+
+const navigateToHashtag = () => {
+  const tag = searchQuery.value.replace('#', '').trim();
+  if (tag) {
+    showSearchOverlay.value = false;
+    showMobileSearch.value = false;
+    router.push({ 
+      name: 'home', 
+      params: { nom_user: userSlug.value || 'user' },
+      query: { tag } 
+    });
+    clearSearch();
+  }
 };
 
 const closeMobileSearch = () => {
@@ -486,6 +536,49 @@ const navigateTo = (path) => {
   font-weight: 500;
   color: var(--text-color);
   font-size: 0.95rem;
+}
+
+/* Hashtag Search Result Styles */
+.hashtag-search-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 8px;
+}
+
+.hashtag-search-result:hover {
+  background: var(--secondary-color);
+}
+
+.hashtag-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.hashtag-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hashtag-text {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+.hashtag-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 .desktop-nav {

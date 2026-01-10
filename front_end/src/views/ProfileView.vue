@@ -1,7 +1,7 @@
 <template>
   <div class="profile-view">
     <div v-if="loading" class="loader-wrapper">
-      <Loader />
+      <AppLoader />
     </div>
     
     <div v-else-if="user" class="profile-container animate-fade-in">
@@ -15,15 +15,20 @@
           </div>
           
           <div class="user-info-section">
+            <div class="name-row">
+              <h2 class="display-name">{{ user.nom }}</h2>
+              <span v-if="user.current_title" class="user-title-badge">{{ user.current_title }}</span>
+            </div>
+            
             <div v-if="user.badges?.length > 0" class="profile-badges-row">
               <span 
                 v-for="badge in user.badges" 
                 :key="badge.id_badge" 
                 class="profile-badge-item"
                 :title="badge.description"
-                :style="{ background: badge.color + '15', color: badge.color, border: '1px solid ' + badge.color + '30' }"
+                :style="{ background: (badge.color || '#1877f2') + '15', color: badge.color || '#1877f2', border: '1px solid ' + (badge.color || '#1877f2') + '30' }"
               >
-                <span class="badge-icon-mini">{{ badge.icon }}</span>
+                <span class="badge-icon-mini">{{ badge.icon || 'star' }}</span>
                 {{ badge.name }}
               </span>
             </div>
@@ -138,7 +143,7 @@
           <!-- Interactions List (Functional) -->
           <div v-else-if="activeTab === 'interactions'" key="interactions" class="interactions-section">
             <div v-if="interactionsLoading" class="mini-loader">
-              <Loader />
+              <AppLoader />
             </div>
             <div v-else-if="interactions.length === 0" class="empty-state-modern">
               <div class="empty-art">✨</div>
@@ -193,7 +198,7 @@
           
           <div class="user-list-content">
              <div v-if="userListLoading" class="mini-loader">
-                <Loader />
+                <AppLoader />
              </div>
              <div v-else-if="userList.length === 0" class="empty-list">
                 <span style="font-size: 3rem; margin-bottom: 10px;">👥</span>
@@ -284,7 +289,7 @@ import { reactive } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import PostCard from '@/components/PostCard.vue';
 import CommentDrawer from '@/components/CommentDrawer.vue';
-import Loader from '@/components/Loader.vue';
+import AppLoader from '@/components/Loader.vue';
 import Swal from 'sweetalert2';
 import ReportModal from '@/components/ReportModal.vue';
 
@@ -719,6 +724,18 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--text-color);
+}
+
+.user-title-badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(24, 119, 242, 0.2);
 }
 
 .verified-badge {

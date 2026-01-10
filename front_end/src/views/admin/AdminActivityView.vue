@@ -165,6 +165,8 @@ onMounted(fetchActivities);
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    max-width: 240px;
 }
 
 .filter-icon {
@@ -197,7 +199,7 @@ onMounted(fetchActivities);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 160px;
+    width: 100%;
 }
 
 .custom-select:hover {

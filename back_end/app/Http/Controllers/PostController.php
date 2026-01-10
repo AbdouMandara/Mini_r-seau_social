@@ -57,6 +57,9 @@ class PostController extends Controller
 
         Activity::log($request->user()->id, 'post', "A publié un nouveau post : " . substr($post->description, 0, 50) . "...");
 
+        // Check for new badges
+        \App\Services\BadgeService::checkBadges($request->user());
+
         // Broadcast the event
         broadcast(new PostCreated($post))->toOthers();
 

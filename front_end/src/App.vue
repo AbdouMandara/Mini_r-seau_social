@@ -91,6 +91,8 @@ const handleLogout = async () => {
   });
 
   if (result.isConfirmed) {
+    showMobileMenu.value = false;
+    showNotifs.value = false;
     await authStore.logout();
     Swal.fire({
       title: 'Déconnecté',

@@ -105,6 +105,7 @@ class AuthController extends Controller
         $user = User::where('slug', $nom)->orWhere('nom', str_replace('_', ' ', $nom))->firstOrFail();
 
         $user->loadCount(['likes', 'comments', 'followers', 'following']);
+        $user->load('badges');
 
         // Add is_following attribute if user is authenticated
         if ($auth = $request->user('sanctum')) {

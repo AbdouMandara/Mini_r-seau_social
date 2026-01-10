@@ -239,6 +239,8 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    max-width: 240px;
 }
 
 .filter-icon {
@@ -271,7 +273,7 @@ onUnmounted(() => {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 180px;
+    width: 100%;
 }
 
 .custom-select:hover {
