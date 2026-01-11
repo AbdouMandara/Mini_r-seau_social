@@ -255,6 +255,8 @@ const handleShare = () => {
             </div>
         `,
         showConfirmButton: false,
+        background: 'var(--card-bg)',
+        color: 'var(--text-color)',
         didOpen: () => {
             document.getElementById('share-wa').onclick = () => {
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
@@ -262,7 +264,14 @@ const handleShare = () => {
             };
             document.getElementById('share-copy').onclick = () => {
                 navigator.clipboard.writeText(message);
-                Swal.fire({ title: 'Lien copié !', icon: 'success', timer: 1000, showConfirmButton: false });
+                Swal.fire({ 
+                    title: 'Lien copié !', 
+                    icon: 'success', 
+                    timer: 1000, 
+                    showConfirmButton: false,
+                    background: 'var(--card-bg)',
+                    color: 'var(--text-color)'
+                });
             };
         }
     });
