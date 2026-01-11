@@ -17,7 +17,13 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $path = $request->file('photo_profil')->store('images/profil_user', 'public');
+        $path = null;
+        if ($request->hasFile('photo_profil')) {
+            $path = $request->file('photo_profil')->store('images/profil_user', 'public');
+        } else {
+            // Generate default avatar if no photo is provided
+            $path = 'https://ui-avatars.com/api/?name=' . urlencode($request->nom) . '&background=random&color=fff';
+        }
 
         $user = User::create([
             'nom' => $request->nom,

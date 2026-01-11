@@ -66,6 +66,9 @@ class CommentController extends Controller
         // Broadcast comment added
         broadcast(new CommentAdded($comment))->toOthers();
 
+        // Check badges for the user who commented
+        \App\Services\BadgeService::checkBadges($request->user());
+
         return response()->json([
             'message' => 'Commentaire ajouté',
             'comment' => new CommentResource($comment->load('user')),

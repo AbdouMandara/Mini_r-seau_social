@@ -53,7 +53,7 @@
           <div class="file-upload-premium" @click="$refs.fileInput.click()">
             <div v-if="!previewUrl" class="upload-placeholder">
               <span class="material-symbols-rounded">add_a_photo</span>
-              <span>Choisir une photo de profil</span>
+              <span>Choisir une photo de profil (Facultatif)</span>
             </div>
             <div v-else class="preview-container">
                 <img :src="previewUrl" class="upload-preview" />
@@ -135,11 +135,6 @@ const handleFileChange = (e) => {
 };
 
 const handleRegister = async () => {
-  if (!form.photo_profil) {
-    errors.value = { photo_profil: ['La photo est requise'] };
-    return;
-  }
-
   loading.value = true;
   errors.value = {};
   globalError.value = null;
@@ -147,7 +142,10 @@ const handleRegister = async () => {
   const formData = new FormData();
   formData.append('nom', form.nom);
   formData.append('password', form.password);
-  formData.append('photo_profil', form.photo_profil);
+  
+  if (form.photo_profil) {
+    formData.append('photo_profil', form.photo_profil);
+  }
 
   try {
     const res = await authStore.register(formData);

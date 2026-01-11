@@ -41,6 +41,10 @@ class FollowController extends Controller
                 'type' => $type,
                 'is_read' => false,
             ]);
+
+            // Check badges for both users
+            \App\Services\BadgeService::checkBadges($user);
+            \App\Services\BadgeService::checkBadges($follower);
         }
 
         return response()->json([
