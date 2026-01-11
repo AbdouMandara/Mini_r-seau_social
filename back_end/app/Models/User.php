@@ -33,6 +33,7 @@ class User extends Authenticatable
         'is_blocked',
         'last_seen_at',
         'current_title',
+        'is_certified',
     ];
 
     /**
@@ -58,6 +59,7 @@ class User extends Authenticatable
             'is_blocked' => 'boolean',
             'last_seen_at' => 'datetime',
             'current_title' => 'string', // Added current_title cast
+            'is_certified' => 'boolean',
         ];
     }
 

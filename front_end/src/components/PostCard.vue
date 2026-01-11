@@ -457,15 +457,7 @@ const editPost = () => {
     color: var(--text-muted);
 }
 
-.matiere-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-}
+
 
 .tag-badge.clickable {
     cursor: pointer;
@@ -474,7 +466,6 @@ const editPost = () => {
 
 .tag-badge.clickable:hover {
     transform: scale(1.05);
-    background: var(--primary-color);
     color: white;
 }
 

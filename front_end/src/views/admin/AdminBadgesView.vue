@@ -2,7 +2,7 @@
   <div class="admin-badges-view">
     <div class="view-header">
       <div class="header-content">
-        <h2 class="page-title">Gamification & Badges</h2>
+        <h2 class="page-title">Badges</h2>
         <p class="subtitle">Gérez les récompenses et les critères d'attribution</p>
       </div>
       <button class="btn btn-primary" @click="openModal()">
@@ -119,6 +119,11 @@
                       <option :value="null">Aucun (Attribution Manuelle)</option>
                       <option value="posts_count">Nombre de posts publiés</option>
                       <option value="likes_received_count">Nombre de likes reçus</option>
+                      <option value="followers_count">Nombre d'abonnés</option>
+                      <option value="following_count">Nombre d'abonnements</option>
+                      <option value="comments_count">Nombre de commentaires</option>
+                      <option value="post_reports_count">Nombre de signalements reçus</option>
+                      <option value="is_certified">Compte certifié</option>
                   </select>
               </div>
 
@@ -277,6 +282,11 @@ const deleteBadge = async (badge) => {
 const formatCriteria = (badge) => {
     if (badge.criteria_type === 'posts_count') return `${badge.criteria_value} posts publiés`;
     if (badge.criteria_type === 'likes_received_count') return `${badge.criteria_value} likes reçus`;
+    if (badge.criteria_type === 'followers_count') return `${badge.criteria_value} abonnés`;
+    if (badge.criteria_type === 'following_count') return `${badge.criteria_value} abonnements`;
+    if (badge.criteria_type === 'comments_count') return `${badge.criteria_value} commentaires`;
+    if (badge.criteria_type === 'post_reports_count') return `${badge.criteria_value} signalements reçus`;
+    if (badge.criteria_type === 'is_certified') return `Compte certifié`;
     return 'Inconnu';
 };
 

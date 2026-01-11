@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'current_title' => $this->current_title,
+            'is_certified' => $this->is_certified,
             'badges' => $this->badges,
         ];
     }

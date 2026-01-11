@@ -176,7 +176,7 @@
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">stars</span>
                     </div>
-                    <span>Gamification</span>
+                    <span>Badge</span>
                   </div>
                   <div v-if="route.name !== 'admin-reports'" class="dropdown-item" @click="navigateTo('/admin/signalements')">
                     <div class="item-icon-bg">

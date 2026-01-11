@@ -55,6 +55,40 @@ class BadgeService
                         $meetsCriteria = true;
                     }
                     break;
+
+                case 'followers_count':
+                    $count = $user->followers()->count();
+                    if ($count >= $badge->criteria_value) {
+                        $meetsCriteria = true;
+                    }
+                    break;
+
+                case 'following_count':
+                    $count = $user->following()->count();
+                    if ($count >= $badge->criteria_value) {
+                        $meetsCriteria = true;
+                    }
+                    break;
+
+                case 'comments_count':
+                    $count = $user->comments()->count();
+                    if ($count >= $badge->criteria_value) {
+                        $meetsCriteria = true;
+                    }
+                    break;
+
+                case 'post_reports_count':
+                    $count = \App\Models\Report::where('id_reported_user', $user->id)->count();
+                    if ($count >= $badge->criteria_value) {
+                        $meetsCriteria = true;
+                    }
+                    break;
+
+                case 'is_certified':
+                    if ($user->is_certified) {
+                        $meetsCriteria = true;
+                    }
+                    break;
             }
 
             if ($meetsCriteria) {
