@@ -10,7 +10,7 @@
             <span 
               v-for="badge in userBadges" 
               :key="badge.id_badge" 
-              class="badge-icon"
+              class="badge-icon material-symbols-rounded"
               :title="badge.name"
               :style="{ color: badge.color }"
             >{{ badge.icon }}</span>

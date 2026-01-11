@@ -17,11 +17,13 @@ class BadgeService
      */
     public static function checkBadges(User $user)
     {
+        \Illuminate\Support\Facades\Log::info('Checking badges for user: ' . $user->nom);
         // Load existing badges to avoid duplicates
         $userBadgesIds = $user->badges()->pluck('badges.id_badge')->toArray();
 
         // Fetch all badges that have criteria
         $availableBadges = Badge::whereNotNull('criteria_type')->get();
+        \Illuminate\Support\Facades\Log::info('Available badges with criteria: ' . $availableBadges->count());
 
         $newBadgeAwarded = false;
 
@@ -36,6 +38,7 @@ class BadgeService
             switch ($badge->criteria_type) {
                 case 'posts_count':
                     $count = $user->posts()->count();
+                    \Illuminate\Support\Facades\Log::info("User {$user->nom} posts count: {$count} | Criteria: {$badge->criteria_value}");
                     if ($count >= $badge->criteria_value) {
                         $meetsCriteria = true;
                     }
@@ -46,6 +49,7 @@ class BadgeService
                     $count = \App\Models\Like::whereHas('post', function($q) use ($user) {
                         $q->where('id_user', $user->id);
                     })->count();
+                    \Illuminate\Support\Facades\Log::info("User {$user->nom} likes received: {$count} | Criteria: {$badge->criteria_value}");
                     
                     if ($count >= $badge->criteria_value) {
                         $meetsCriteria = true;
@@ -54,6 +58,7 @@ class BadgeService
             }
 
             if ($meetsCriteria) {
+                \Illuminate\Support\Facades\Log::info("Awarding badge {$badge->name} to user {$user->nom}");
                 // Award the badge
                 $user->badges()->attach($badge->id_badge);
                 

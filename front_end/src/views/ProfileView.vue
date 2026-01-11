@@ -17,7 +17,6 @@
           <div class="user-info-section">
             <div class="name-row">
               <h2 class="display-name">{{ user.nom }}</h2>
-              <span v-if="user.current_title" class="user-title-badge">{{ user.current_title }}</span>
             </div>
             
             <div v-if="user.badges?.length > 0" class="profile-badges-row">
@@ -28,7 +27,7 @@
                 :title="badge.description"
                 :style="{ background: (badge.color || '#1877f2') + '15', color: badge.color || '#1877f2', border: '1px solid ' + (badge.color || '#1877f2') + '30' }"
               >
-                <span class="badge-icon-mini">{{ badge.icon || 'star' }}</span>
+                <span class="badge-icon-mini material-symbols-rounded">{{ badge.icon || 'star' }}</span>
                 {{ badge.name }}
               </span>
             </div>
