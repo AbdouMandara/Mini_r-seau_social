@@ -15,23 +15,9 @@
           </div>
           
           <div class="user-info-section">
-            <div class="name-row">
-              <h2 class="display-name">{{ user.nom }}</h2>
-            </div>
-            
-            <div v-if="user.badges?.length > 0" class="profile-badges-row">
-              <span 
-                v-for="badge in user.badges" 
-                :key="badge.id_badge" 
-                class="profile-badge-item"
-                :title="badge.description"
-                :style="{ background: (badge.color || '#1877f2') + '15', color: badge.color || '#1877f2', border: '1px solid ' + (badge.color || '#1877f2') + '30' }"
-              >
-                <span class="badge-icon-mini material-symbols-rounded">{{ badge.icon || 'star' }}</span>
-                {{ badge.name }}
-              </span>
-            </div>
-            <p class="handle">@{{ (user.slug || user.nom).toLowerCase().replace(/ /g, '_') }}</p>
+            <h2 class="display-name">{{ user.nom }}</h2>
+           <p v-if="user.bio" class="bio-content">{{ user.bio }}</p>
+          <p v-else-if="isMyProfile" class="bio-content placeholder">[Ajoutez une bio pour en cliquant sur Modifier]</p>
             
             <div class="profile-actions">
               <template v-if="isMyProfile">
@@ -88,15 +74,22 @@
           </div>
         </div>
 
-        <div class="profile-bio-new">
+        <div v-if="user.badges?.length > 0" class="profile-bio-new">
           <div class="bio-meta-grid">
-            <span class="meta-item">
-              <span class="material-symbols-rounded">calendar_today</span>
-              Depuis {{ new Date(user.created_at).getFullYear() }}
-            </span>
+            <div class="profile-badges-row">
+              <span 
+                v-for="badge in user.badges" 
+                :key="badge.id_badge" 
+                class="profile-badge-item"
+                :title="badge.description"
+                :style="{ background: (badge.color || '#1877f2') + '15', color: badge.color || '#1877f2', border: '1px solid ' + (badge.color || '#1877f2') + '30' }"
+              >
+                <span class="badge-icon-mini material-symbols-rounded">{{ badge.icon || 'star' }}</span>
+                <span class="badge-name">{{ badge.name }}</span>
+              </span>
+            </div>
           </div>
-          <p v-if="user.bio" class="bio-content">{{ user.bio }}</p>
-          <p v-else-if="isMyProfile" class="bio-content placeholder">Ajoutez une bio pour vous présenter au monde...</p>
+          
         </div>
       </div>
 
@@ -365,10 +358,6 @@ const toggleFollowUserInList = async (u) => {
         if (originalState) {
             // Unfollow
             await api.delete(`/users/${u.id}/unfollow`);
-            // If viewing my own 'following' list, I might want to remove them from the list?
-            // User requested "voir mon nombre d'abonnements et le bouton suivi". 
-            // Usually we don't remove immediately to avoid UI jumping, unless requested.
-            // But we should update the counters on the profile page if it's my profile.
         } else {
             // Follow
             await api.post(`/users/${u.id}/follow`);
@@ -725,7 +714,7 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
 .name-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
 }
 
 .display-name {
@@ -751,36 +740,62 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
   display: flex;
 }
 
-.handle {
-  color: var(--text-muted);
-  font-weight: 500;
-  margin-bottom: 20px;
-}
-
 .profile-badges-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 5px 0 15px;
 }
 
 .profile-badge-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 8px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.profile-badge-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  filter: brightness(1.1);
 }
 
 .badge-icon-mini {
-  font-size: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-name {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .profile-badge-item {
+    padding: 8px;
+    gap: 0;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+  }
+  
+  .badge-name {
+    display: none;
+  }
 }
 
 .profile-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  justify-content : center;
 }
 
 .btn-edit-modern {
@@ -878,6 +893,7 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
 .bio-content {
   line-height: 1.6;
   color: var(--text-color);
+  margin-bottom: 20px;
 }
 
 .bio-content.placeholder {
