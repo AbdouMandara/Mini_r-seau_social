@@ -25,11 +25,6 @@ class FollowController extends Controller
             $isFollowBack = $user->isFollowing($follower);
             $type = $isFollowBack ? 'follow_back' : 'follow';
 
-            // Create Follow record
-            $follow = Follow::create([
-                'id_user_follower' => $request->user()->id,
-                'id_user_followed' => $user->id,
-            ]);
 
             // Log Activity
             Activity::log($request->user()->id, 'follow', "A commencé à suivre " . $user->nom);

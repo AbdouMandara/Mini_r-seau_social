@@ -464,11 +464,6 @@ const editPost = () => {
     transition: transform 0.2s, background 0.2s;
 }
 
-.tag-badge.clickable:hover {
-    transform: scale(1.05);
-    color: white;
-}
-
 :deep(.mention-link) {
     color: var(--primary-color);
     font-weight: 700;
