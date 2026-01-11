@@ -37,8 +37,6 @@
           :class="post.tag"
           @click="filterByTag(post.tag)"
         >#{{ post.tag }}</span>
-
-        <span v-if="post.matiere" class="matiere-badge">📚 {{ post.matiere }}</span>
       </div>
       
       <div v-if="post.img_post" class="post-image-container">
@@ -59,6 +57,10 @@
         <span class="count visible">{{ commentsCount }}</span>
       </button>
 
+      <button class="action-btn" @click="handleShare">
+        <span class="material-symbols-rounded icon">share</span>
+      </button>
+        
     <ReportModal 
       :is-open="showReportModal"
       :post-id="post.id_post"
