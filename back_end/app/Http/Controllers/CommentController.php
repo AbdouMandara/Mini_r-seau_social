@@ -14,9 +14,8 @@ class CommentController extends Controller
 {
     public function store(CommentRequest $request, Post $post)
     {
-        if (!$post->allow_comments) {
-            return response()->json(['message' => 'Les commentaires sont désactivés pour ce post'], 403);
-        }
+        // 🔒 Autorisation via Policy sur le Post (est-ce que les commentaires sont permis ?)
+        $this->authorize('comment', $post);
 
         $comment = Comment::create([
             'id_user' => $request->user()->id,
@@ -24,7 +23,7 @@ class CommentController extends Controller
             'contenu' => $request->contenu,
         ]);
 
-        \App\Models\Activity::log($request->user()->id, 'commentaire', "A commenté un post de " . $post->user->nom);
+        \App\Models\Activity::log($request->user()->id, 'commentaire', "A commenté le post de " . $post->user->nom);
 
         // Detection des mentions @Nom
         preg_match_all('/@([a-zA-Z0-9_\x{00C0}-\x{017F}]+(?:\s[a-zA-Z0-9_\x{00C0}-\x{017F}]+)*)/u', $request->contenu, $matches);
@@ -78,9 +77,8 @@ class CommentController extends Controller
 
     public function update(CommentRequest $request, Comment $comment)
     {
-        if ($comment->id_user !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorisé'], 403);
-        }
+        // 🔒 Autorisation via Policy
+        $this->authorize('update', $comment);
 
         $comment->update([
             'contenu' => $request->contenu,
@@ -94,9 +92,8 @@ class CommentController extends Controller
 
     public function destroy(Request $request, Comment $comment)
     {
-        if ($comment->id_user !== $request->user()->id && $comment->post->id_user !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorisé'], 403);
-        }
+        // 🔒 Autorisation via Policy (propriétaire du commentaire ou du post ou admin)
+        $this->authorize('delete', $comment);
 
         $postId = $comment->id_post;
         $comment->delete();

@@ -16,11 +16,14 @@ class AdminController extends Controller
 {
     public function getDashboardStats()
     {
-        $adminId = request()->user()->id; // Changed $request to request() helper
+        // 🔒 Vérification Admin via Policy
+        $this->authorize('manage', User::class);
 
-        $stats = [
+        $adminId = request()->user()->id;
+
+        return response()->json([
             'total_users' => User::where('is_admin', false)->count(),
-            'total_posts' => Post::count(),
+            'total_posts' => Post::where('is_delete', false)->count(),
             'total_likes' => Like::count(),
             'total_comments' => Comment::count(),
             'unread_reports' => Notification::where('id_user_target', $adminId)
@@ -31,29 +34,36 @@ class AdminController extends Controller
                                     ->where('type', 'new_user')
                                     ->where('is_read', false)
                                     ->count(),
-        ];
-
-        return response()->json($stats);
+        ]);
     }
 
     public function getUsers(Request $request)
     {
+        $this->authorize('manage', User::class);
+
         $users = User::where('is_admin', false)
             ->withCount(['posts', 'followers', 'following'])
             ->latest()
             ->paginate(10);
 
-        return response()->json($users);
+        // 🔒 Utilisation systématique de UserResource
+        return UserResource::collection($users);
     }
 
     public function getFeedbacks()
     {
-        $feedbacks = Feedback::with('user:id,nom,photo_profil')->latest()->get();
-        return response()->json($feedbacks);
+        $this->authorize('manage', User::class);
+
+        $feedbacks = Feedback::with('user')->latest()->get();
+        
+        // 🔒 Utilisation systématique de FeedbackResource
+        return \App\Http\Resources\FeedbackResource::collection($feedbacks);
     }
 
     public function toggleBlock(Request $request, User $user)
     {
+        $this->authorize('manage', User::class);
+
         $request->validate([
             'admin_password' => 'required|string',
         ]);
@@ -64,14 +74,18 @@ class AdminController extends Controller
             return response()->json(['message' => 'Mot de passe administrateur incorrect'], 403);
         }
 
+        if ($user->is_admin) {
+            return response()->json(['message' => 'Impossible de bloquer un administrateur'], 403);
+        }
+
         $user->is_blocked = !$user->is_blocked;
         $user->save();
 
-        $status = $user->is_blocked ? 'bloqué' : 'débloqué';
+        \App\Models\Activity::log(Auth::id(), 'admin', ($user->is_blocked ? "A bloqué" : "A débloqué") . " l'utilisateur " . $user->nom);
 
         return response()->json([
-            'message' => "Utilisateur $status avec succès",
-            'is_blocked' => $user->is_blocked
+            'message' => "Utilisateur " . ($user->is_blocked ? 'bloqué' : 'débloqué') . " avec succès",
+            'user' => new UserResource($user)
         ]);
     }
 }

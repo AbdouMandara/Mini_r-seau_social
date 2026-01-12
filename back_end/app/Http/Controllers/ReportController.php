@@ -12,10 +12,15 @@ class ReportController extends Controller
     // Admin: Get all reports
     public function index()
     {
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('viewAny', \App\Models\Report::class);
+
         $reports = Report::with(['reporter', 'post.user', 'reportedUser'])
                          ->orderBy('created_at', 'desc')
                          ->get();
-        return response()->json($reports);
+
+        // 🔒 Utilisation systématique de ReportResource
+        return \App\Http\Resources\ReportResource::collection($reports);
     }
 
     // User: Submit a report
@@ -57,12 +62,18 @@ class ReportController extends Controller
         // Emit Event to Notify Admins
         event(new \App\Events\ReportSubmitted($report));
 
-        return response()->json($report, 201);
+        return response()->json([
+            'message' => 'Signalement soumis avec succès.',
+            'report' => new \App\Http\Resources\ReportResource($report),
+        ], 201);
     }
 
     // Admin: Update status
     public function update(Request $request, Report $report)
     {
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('update', $report);
+
         $request->validate([
             'status' => 'required|in:pending,resolved,ignored'
         ]);
@@ -70,6 +81,9 @@ class ReportController extends Controller
         $report->status = $request->status;
         $report->save();
 
-        return response()->json($report);
+        return response()->json([
+            'message' => 'Statut du signalement mis à jour.',
+            'report' => new \App\Http\Resources\ReportResource($report),
+        ]);
     }
 }

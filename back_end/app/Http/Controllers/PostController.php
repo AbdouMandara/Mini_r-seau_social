@@ -58,9 +58,8 @@ class PostController extends Controller
 
     public function update(PostRequest $request, Post $post)
     {
-        if ($post->id_user !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorisé'], 403);
-        }
+        // 🔒 Autorisation via Policy
+        $this->authorize('update', $post);
 
         if ($request->hasFile('img_post')) {
             if ($post->img_post) {
@@ -77,7 +76,6 @@ class PostController extends Controller
         }
         $post->save();
 
-        // Redetect mentions if description changed
         if ($request->has('description')) {
             $this->detectMentions($post, $request->description, $request->user());
         }
@@ -90,9 +88,8 @@ class PostController extends Controller
 
     public function destroy(Request $request, Post $post)
     {
-        if ($post->id_user !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorisé'], 403);
-        }
+        // 🔒 Autorisation via Policy
+        $this->authorize('delete', $post);
 
         $post->is_delete = true;
         $post->save();

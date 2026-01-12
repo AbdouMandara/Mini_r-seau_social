@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Log;
 Log::info('API routes file loaded');
 \Illuminate\Support\Facades\Log::info('Request path: ' . request()->path());
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1'); // Limit registration
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1'); // Limit login attempts
 
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
@@ -52,11 +52,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Interactive routes requiring checkBlocked
 Route::middleware(['auth:sanctum', 'checkBlocked'])->group(function () {
-    Route::post('/posts', [PostController::class, 'store']);
+    Route::post('/posts', [PostController::class, 'store'])->middleware('throttle:10,1');
     Route::post('/posts/{post}', [PostController::class, 'update']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
-    Route::post('/posts/{post}/like', [LikeController::class, 'toggle']);
-    Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])->middleware('throttle:30,1');
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->middleware('throttle:20,1');
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 

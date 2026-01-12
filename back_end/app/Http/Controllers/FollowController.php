@@ -75,7 +75,8 @@ class FollowController extends Controller
             return $follower;
         });
 
-        return response()->json($followers);
+        // 🔒 Utilisation de UserResource pour filtrer les champs sensibles
+        return UserResource::collection($followers);
     }
 
     public function following(Request $request, User $user)
@@ -87,6 +88,7 @@ class FollowController extends Controller
             return $followedUser;
         });
 
-        return response()->json($following);
+        // 🔒 Utilisation de UserResource
+        return UserResource::collection($following);
     }
 }

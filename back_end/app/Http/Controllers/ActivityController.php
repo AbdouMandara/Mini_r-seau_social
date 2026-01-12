@@ -9,15 +9,14 @@ class ActivityController extends Controller
 {
     public function index(Request $request)
     {
-        // Only admins can see activities
-        if (!$request->user()->is_admin) {
-            return response()->json(['message' => 'Non autorisé'], 403);
-        }
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('manage', \App\Models\User::class);
 
         $activities = Activity::with('user')
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 
-        return response()->json($activities);
+        // 🔒 Utilisation de ActivityResource
+        return \App\Http\Resources\ActivityResource::collection($activities);
     }
 }

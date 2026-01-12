@@ -45,31 +45,15 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'nom' => 'required|string',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->validated();
 
         Log::info('Login attempt', ['nom' => $credentials['nom']]);
 
         $user = User::where('nom', $credentials['nom'])->first();
 
-        if (!$user) {
-            Log::warning('Login failed: User not found', ['nom' => $credentials['nom']]);
-        } else {
-            $passwordOk = Hash::check($credentials['password'], $user->password);
-            Log::info('Login debug', [
-                'user_found' => true,
-                'password_check' => $passwordOk,
-                'is_admin' => $user->is_admin,
-                'is_blocked' => $user->is_blocked,
-            ]);
-        }
-
         if (Auth::attempt($credentials)) {
-            // Retrieve authenticated user. If null (unexpected), fallback to the manually queried user.
             $authUser = Auth::user() ?? $user;
 
             Log::info('Login success', ['nom' => $credentials['nom'], 'id' => $authUser->id]);
@@ -78,7 +62,6 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Connexion réussie',
                 'user' => new UserResource($authUser),
-                'debug_hit' => true,
             ]);
         }
 
@@ -92,7 +75,6 @@ class AuthController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return response()->json([
@@ -102,43 +84,41 @@ class AuthController extends Controller
 
     public function profile(Request $request)
     {
-        return new UserResource($request->user());
+        // 🔒 Utilisation systématique de UserResource
+        return new UserResource($request->user()->load('badges'));
     }
 
     public function getUserByNom(Request $request, $nom)
     {
-        // Try to find by slug first, then name (decoding URL encoded spaces if needed)
         $user = User::where('slug', $nom)->orWhere('nom', str_replace('_', ' ', $nom))->firstOrFail();
 
         $user->loadCount(['likes', 'comments', 'followers', 'following']);
-        $user->load('badges');
+        $user->load(['badges', 'posts' => function($query) {
+             $query->where('is_delete', false)->latest()->take(10);
+        }]);
 
-        // Add is_following attribute if user is authenticated
         if ($auth = $request->user('sanctum')) {
             $user->is_following = $auth->isFollowing($user);
         } else {
             $user->is_following = false;
         }
 
-        return response()->json($user);
+        // 🔒 Utilisation systématique de UserResource pour éviter l'exposition de is_admin
+        return new UserResource($user);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
         $user = $request->user();
 
-        $request->validate([
-            'nom' => 'required|string|max:191|unique:users,nom,' . $user->id,
-            'photo_profil' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
-            'bio' => 'nullable|string',
-        ]);
+        // 🔒 Vérification via Policy (optionnel ici car on utilise $request->user(), mais bonne pratique)
+        // $this->authorize('update', $user);
 
         $user->nom = $request->nom;
         $user->bio = $request->bio;
 
         if ($request->hasFile('photo_profil')) {
-            // Delete old photo if exists
-            if ($user->photo_profil) {
+            if ($user->photo_profil && !str_starts_with($user->photo_profil, 'http')) {
                 Storage::disk('public')->delete($user->photo_profil);
             }
             $path = $request->file('photo_profil')->store('images/profil_user', 'public');
@@ -152,6 +132,7 @@ class AuthController extends Controller
             'user' => new UserResource($user),
         ]);
     }
+
     public function searchUsers(Request $request)
     {
         $query = $request->input('query');
@@ -161,20 +142,11 @@ class AuthController extends Controller
         }
 
         $users = User::where('nom', 'LIKE', "%{$query}%")
-                    ->where('is_admin', false)
-                    ->select('id', 'nom', 'photo_profil', 'slug')
+                    ->where('is_blocked', false) // 🔒 Sécurité : Ne pas afficher les utilisateurs bloqués
                     ->limit(10)
                     ->get();
 
-        // Append full URL for photo_profil if needed
-        foreach ($users as $user) {
-             if ($user->photo_profil && !str_starts_with($user->photo_profil, 'http')) {
-                // We don't need to append full url here if frontend handles it,
-                // but let's keep it consistent or just return path.
-                // Front end App.vue handles /storage/ prefix.
-             }
-        }
-
-        return response()->json($users);
+        // 🔒 Utilisation systématique de UserResource
+        return UserResource::collection($users);
     }
 }

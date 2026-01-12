@@ -11,14 +11,15 @@ class BadgeController extends Controller
      */
     public function index()
     {
-        return response()->json(\App\Models\Badge::all());
+        // Les badges sont publics
+        return BadgeResource::collection(\App\Models\Badge::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(\Illuminate\Http\Request $request)
+    public function store(Request $request)
     {
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('manage', \App\Models\Badge::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -30,22 +31,22 @@ class BadgeController extends Controller
 
         $badge = \App\Models\Badge::create($validated);
 
-        return response()->json($badge, 201);
+        return response()->json([
+            'message' => 'Badge créé avec succès',
+            'badge' => new BadgeResource($badge)
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(\App\Models\Badge $badge)
     {
-        return response()->json($badge);
+        return new BadgeResource($badge);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(\Illuminate\Http\Request $request, \App\Models\Badge $badge)
+    public function update(Request $request, \App\Models\Badge $badge)
     {
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('manage', \App\Models\Badge::class);
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -57,15 +58,18 @@ class BadgeController extends Controller
 
         $badge->update($validated);
 
-        return response()->json($badge);
+        return response()->json([
+            'message' => 'Badge mis à jour avec succès',
+            'badge' => new BadgeResource($badge)
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(\App\Models\Badge $badge)
     {
+        // 🔒 Autorisation via Policy (Admin uniquement)
+        $this->authorize('manage', \App\Models\Badge::class);
+
         $badge->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Badge supprimé'], 204);
     }
 }
