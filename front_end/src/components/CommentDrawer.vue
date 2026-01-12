@@ -20,7 +20,7 @@
           <div v-for="comment in comments" :key="comment.id_commentaire" class="comment-item">
             <img :src="getAvatar(comment.user)" class="comment-avatar" />
             <div class="comment-text">
-              <span class="comment-user">{{ comment.user?.nom || 'Utilisateur' }}</span>
+              <span class="comment-user">{{ comment.user?.nom }}</span>
               <p class="comment-content" v-html="formatMentions(comment.contenu)"></p>
               <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
             </div>

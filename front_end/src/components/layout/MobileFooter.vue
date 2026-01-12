@@ -2,7 +2,7 @@
   <nav v-if="authStore.user && userSlug && !route.path.startsWith('/admin') && !isBlockedPage" class="mobile-footer">
     <div class="footer-grid">
       <router-link :to="`/${userSlug}/home`" class="footer-item">
-        <span class="material-symbols-rounded">home</span>
+        <span class="material-symbols-rounded icone-home">home</span>
       </router-link>
       <router-link :to="`/${userSlug}/add_post`" class="footer-item">
         <div class="plus-btn">
@@ -53,6 +53,7 @@ const handleImgError = (e) => {
 </script>
 
 <style scoped>
+
 .mobile-footer {
   position: fixed;
   bottom: 0;
@@ -88,10 +89,12 @@ const handleImgError = (e) => {
 .footer-item.router-link-active {
   color: var(--primary-color);
 }
-
+.icone-home{
+  font-size: 30px;
+}
 .plus-btn {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   background: var(--primary-color);
   border-radius: 50%;
   display: flex;

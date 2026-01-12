@@ -21,16 +21,6 @@ class PostController extends Controller
             $query->where('tag', $request->tag);
         }
 
-        if ($request->has('filiere')) {
-            $query->where('filiere', $request->filiere);
-        }
-
-        if ($request->has('etablissement') && $request->etablissement !== '') {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('etablissement', 'LIKE', "%{$request->etablissement}%");
-            });
-        }
-
         return PostResource::collection($query->latest()->paginate(10));
     }
 
@@ -47,9 +37,6 @@ class PostController extends Controller
             'id_user' => $request->user()->id,
             'allow_comments' => $request->get('allow_comments', true),
             'tag' => $request->tag,
-            'filiere' => $request->filiere,
-            'niveau' => $request->niveau,
-            'matiere' => $request->matiere,
         ]);
 
         // Detect mentions in the description
@@ -84,9 +71,6 @@ class PostController extends Controller
 
         $post->description = $request->description;
         $post->tag = $request->tag;
-        $post->filiere = $request->filiere;
-        $post->niveau = $request->niveau;
-        $post->matiere = $request->matiere;
 
         if ($request->has('allow_comments')) {
             $post->allow_comments = filter_var($request->allow_comments, FILTER_VALIDATE_BOOLEAN);

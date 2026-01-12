@@ -240,7 +240,7 @@ const handleShare = () => {
     const userNom = props.post.user?.nom || 'Utilisateur';
     const profileUrl = `${window.location.origin}/${userNom}/profil/${authStore.user?.nom}`;
     const shareUrl = `${window.location.origin}/post/${props.post.id_post}`;
-    const message = `Regarde cette publication de ${userNom} sur !pozterr : ${shareUrl}\n\nRetrouve aussi son profil ici : ${profileUrl}`;
+    const message = `Regarde cette publication de ${userNom} sur !Pozterr : ${shareUrl}\n\nRetrouve aussi son profil ici : ${profileUrl}`;
     
     Swal.fire({
         title: 'Partager le post',
@@ -503,23 +503,32 @@ const editPost = () => {
 .dropdown-menu {
   position: absolute;
   right: 0;
-  top: 30px;
+  top: 35px;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 8px;
+  padding: 6px;
   z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+}
+
+.dark .dropdown-menu {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .dropdown-menu button {
   display: block;
   width: 100%;
-  padding: 8px 16px;
+  padding: 10px 12px;
   border: none;
   background: none;
   text-align: left;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .dropdown-menu button:hover {
@@ -527,7 +536,15 @@ const editPost = () => {
 }
 
 .delete-btn {
-  color: var(--error);
+  color: var(--error) !important;
+}
+
+.report-btn {
+  color: var(--text-color);
+}
+
+.report-btn:hover {
+  color: #f59e0b;
 }
 
 @media (max-width: 480px) {

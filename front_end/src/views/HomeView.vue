@@ -249,7 +249,6 @@ onUnmounted(() => {
     gap: 15px;
     background: var(--card-bg);
     border-radius: 12px;
-    border-left: 4px solid var(--primary-color);
 }
 
 .hashtag-title {

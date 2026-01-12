@@ -11,6 +11,7 @@ class PostRequest extends FormRequest
         return true;
     }
 
+    // Pour donner des règles à mes champs donc comment ils seront etc ...
     public function rules(): array
     {
         return [
@@ -18,9 +19,6 @@ class PostRequest extends FormRequest
             'img_post' => 'nullable|image|mimes:jpeg,jpg,png,svg|max:2048',
             'allow_comments' => 'boolean',
             'tag' => 'required|string|max:50',
-            'filiere' => 'required|string|in:GL,GLT,SWE,MVC,LTM',
-            'niveau' => 'required|string|in:1,2',
-            'matiere' => 'nullable|string|max:191',
         ];
     }
 }

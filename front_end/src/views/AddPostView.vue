@@ -44,16 +44,6 @@
           </div>
         </div>
 
-        <div class="input-group">
-          <label>Matière (optionnelle)</label>
-          <input 
-            v-model="form.matiere" 
-            type="text" 
-            class="input-control" 
-            placeholder="Ex: Architecture des ordinateurs"
-          >
-        </div>
-
         <div class="input-grid">
           <div class="input-group">
             <label>Tag (ex: etude, info...)</label>
@@ -111,8 +101,7 @@ const form = reactive({
   description: '',
   img_post: null,
   allow_comments: true,
-  tag: '',
-  matiere: ''
+  tag: ''
 });
 
 const handleFileChange = (e) => {
@@ -135,7 +124,6 @@ const loadPostData = async () => {
     form.description = post.description || '';
     form.allow_comments = post.allow_comments;
     form.tag = post.tag || '';
-    form.matiere = post.matiere || '';
     
     if (post.img_post) {
       previewUrl.value = post.img_post.startsWith('http') 
@@ -165,7 +153,6 @@ const handleSubmit = async () => {
   const formData = new FormData();
   formData.append('description', form.description);
   formData.append('tag', form.tag);
-  formData.append('matiere', form.matiere || '');
 
   if (form.img_post instanceof File) {
     formData.append('img_post', form.img_post);
