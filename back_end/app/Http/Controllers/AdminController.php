@@ -11,13 +11,15 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
     public function getDashboardStats()
     {
         // 🔒 Vérification Admin via Policy
-        $this->authorize('manage', User::class);
+        $this->authorize('accessAdminPanel', User::class);
 
         $adminId = request()->user()->id;
 
@@ -39,7 +41,7 @@ class AdminController extends Controller
 
     public function getUsers(Request $request)
     {
-        $this->authorize('manage', User::class);
+        $this->authorize('accessAdminPanel', User::class);
 
         $users = User::where('is_admin', false)
             ->withCount(['posts', 'followers', 'following'])
@@ -52,7 +54,7 @@ class AdminController extends Controller
 
     public function getFeedbacks()
     {
-        $this->authorize('manage', User::class);
+        $this->authorize('accessAdminPanel', User::class);
 
         $feedbacks = Feedback::with('user')->latest()->get();
         
@@ -62,7 +64,7 @@ class AdminController extends Controller
 
     public function toggleBlock(Request $request, User $user)
     {
-        $this->authorize('manage', User::class);
+        $this->authorize('accessAdminPanel', User::class);
 
         $request->validate([
             'admin_password' => 'required|string',

@@ -131,7 +131,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (isAuthenticated && user) {
     // Admin Isolation
-    if (user.is_admin) {
+    if (user.role === 'admin') {
         // If trying to access non-admin pages (except login/blocked which are handled elsewhere or irrelevant)
         // We allow accessing /admin/* and maybe some specifics, but user said "que à la page admin"
         if (!to.path.startsWith('/admin') && to.name !== 'login') {
@@ -142,7 +142,7 @@ router.beforeEach(async (to, from, next) => {
 
     // Guest pages for logged in users
     if (to.meta.guest) {
-      if (user.is_admin) {
+      if (user.role === 'admin') {
         next('/admin/dashboard');
       } else {
         const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
@@ -162,7 +162,7 @@ router.beforeEach(async (to, from, next) => {
     }
 
     // Protected Admin Routes for non-admins
-    if (to.meta.admin && !user.is_admin) {
+    if (to.meta.admin && user.role !== 'admin') {
         next(`/${user.nom}/home`);
         return;
     }

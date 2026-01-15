@@ -20,16 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        \Illuminate\Support\Facades\Schema::defaultStringLength(255);
 
         \Illuminate\Support\Facades\Event::listen(
             \App\Events\PostCreated::class,
             [\App\Listeners\AwardBadges::class, 'handle']
-        );
-
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\PostCreated::class,
-            [\App\Listeners\NotifyFiliereUsers::class, 'handle']
         );
 
         \Illuminate\Support\Facades\Event::listen(

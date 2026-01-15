@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Activity;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,8 +28,8 @@ class AuthController extends Controller
 
         $user = User::create([
             'nom' => $request->nom,
-            // ⚠️ En Laravel 12, le cast 'hashed' dans le modèle User hache déjà le mot de passe.
-            // Le hacher ici avec Hash::make() créerait un double-hachage invalide.
+            //  En Laravel 12, le cast 'hashed' dans le modèle User hache déjà le mot de passe.
+            // Le hacher ici avec Hash::make() créerait un double-hachage invalide donc ça ne sert plus à rien d'importer Hash .
             'password' => $request->password,
             'photo_profil' => $path,
         ]);
@@ -59,9 +60,17 @@ class AuthController extends Controller
             Log::info('Login success', ['nom' => $credentials['nom'], 'id' => $authUser->id]);
             $request->session()->regenerate();
 
+            // SÉCURITÉ : Vérification si c'est l"admin ou le user via Policy
+            // On ne vérifie pas "is_admin" directement ici, on demande à la Policy si l'user a le droit d'acceder au dashboard Admin.
+            $canAccessAdmin = $authUser->can('accessAdminPanel', User::class);
+            
+            // Calcul de la redirection côté serveur
+            $redirectUrl = $canAccessAdmin ? '/admin/dashboard' : '/' . ($authUser->slug ?? str_replace(' ', '_', $authUser->nom)) . '/home';
+
             return response()->json([
                 'message' => 'Connexion réussie',
                 'user' => new UserResource($authUser),
+                'redirect' => $redirectUrl,
             ]);
         }
 
@@ -84,7 +93,7 @@ class AuthController extends Controller
 
     public function profile(Request $request)
     {
-        // 🔒 Utilisation systématique de UserResource
+        //Utilisation systématique de UserResource pour dire au front-end les badges de ce user
         return new UserResource($request->user()->load('badges'));
     }
 

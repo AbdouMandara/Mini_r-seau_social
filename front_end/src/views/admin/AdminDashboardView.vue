@@ -101,10 +101,10 @@ let clockInterval = null;
 
 onMounted(() => {
     fetchStats();
-    // Refresh stats every 30 seconds
+    // Toutes les 30 s on rafraichit les statistiques reçues coté back-end pour que ce soit à jour sur le front-end
     statsInterval = setInterval(fetchStats, 30000);
 
-    // Clock Logic
+    //Logique pour l'heure qui s'affiche
     currentTime.value = new Date().toLocaleTimeString('fr-FR');
     clockInterval = setInterval(() => {
         currentTime.value = new Date().toLocaleTimeString('fr-FR');

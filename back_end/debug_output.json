@@ -1,0 +1,5 @@
+{
+    "default_cache": "file",
+    "db_database": "back_end_mini_r\u00e9seau_social",
+    "queue_connection": "database"
+}

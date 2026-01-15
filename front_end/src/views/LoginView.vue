@@ -112,17 +112,19 @@ const handleLogin = async () => {
   error.value = null;
 
   try {
-    await authStore.login(form);
+    const response = await authStore.login(form);
 
     const user = authStore.user;
     if (!user) throw new Error('Utilisateur non trouvé après connexion');
-
-    if (user.is_admin) {
-        router.push('/admin/dashboard');
-        return;
+    // La redirection est maintenant gérée par le backend pour plus de sécurité et de précision
+    const redirectUrl = response.redirect;
+    if (redirectUrl) {
+        router.push(redirectUrl);
+    } else {
+        // Fallback si pas de redirect (ancien comportement ou sécurité)
+        const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
+        router.push(`/${username}/home`);
     }
-    const username = (user.slug || user.nom || 'me').replace(/ /g, '_');
-    router.push(`/${username}/home`);
   } catch (err) {
     console.error('Login failed with error:', err);
     error.value = err.response?.data?.message || err.message || 'Identifiants incorrects';

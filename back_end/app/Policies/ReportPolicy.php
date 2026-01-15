@@ -12,7 +12,7 @@ class ReportPolicy
      */
     public function viewAny(User $user): bool
     {
-        // 🔒 Seuls les admins peuvent voir la liste des signalements.
+        // Seuls les admins peuvent voir la liste des signalements.
         return (bool) $user->is_admin;
     }
 
@@ -21,7 +21,7 @@ class ReportPolicy
      */
     public function update(User $user, Report $report): bool
     {
-        // 🔒 Seuls les admins peuvent traiter un signalement.
+        //  Seuls les admins peuvent traiter un signalement.
         return (bool) $user->is_admin;
     }
 
@@ -30,7 +30,7 @@ class ReportPolicy
      */
     public function create(User $user): bool
     {
-        // 🔒 Tout utilisateur authentifié peut signaler un contenu.
+        // Tout utilisateur authentifié peut signaler un contenu.
         return true;
     }
 }
