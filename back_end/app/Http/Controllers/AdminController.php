@@ -44,7 +44,7 @@ class AdminController extends Controller
         $this->authorize('accessAdminPanel', User::class);
 
         $users = User::where('is_admin', false)
-            ->withCount(['posts', 'followers', 'following'])
+            ->withCount(['posts', 'followers', 'following', 'likes', 'comments'])
             ->latest()
             ->paginate(10);
 

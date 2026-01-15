@@ -63,6 +63,7 @@ watch(() => props.show, (newVal) => {
 const getAuthorAvatar = (author) => {
   if (!author) return 'https://ui-avatars.com/api/?name=U';
   if (author.photo_profil) {
+    if (author.photo_profil.startsWith('http')) return author.photo_profil;
     return `${BASE_URL}/storage/${author.photo_profil}`;
   }
   return 'https://ui-avatars.com/api/?name=' + author.nom;

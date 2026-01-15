@@ -15,10 +15,10 @@ class ActivityResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id_activity' => $this->id_activity,
             'user' => new UserResource($this->whenLoaded('user')),
-            'type' => $this->type,
-            'description' => $this->description,
+            'action' => $this->action,
+            'details' => $this->details,
             'created_at' => $this->created_at,
         ];
     }

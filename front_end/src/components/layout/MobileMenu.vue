@@ -19,7 +19,7 @@
             </div>
             
             <!-- Admin Menu Items -->
-            <template v-if="authStore.user?.is_admin || authStore.user?.data?.is_admin">
+            <template v-if="authStore.user?.role === 'admin'">
               <div v-if="route.name !== 'admin-dashboard'" class="menu-item-mobile" @click="navigateTo('/admin/dashboard')">
                 <div class="label-with-icon">
                   <span class="material-symbols-rounded">dashboard</span>

@@ -15,7 +15,7 @@ class ReportResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->id_report,
             'reporter' => new UserResource($this->whenLoaded('reporter')),
             'post' => new PostResource($this->whenLoaded('post')),
             'reason' => $this->reason,

@@ -5,7 +5,7 @@
       
       <div v-if="authStore.isAuthenticated && authStore.user" class="header-actions">
         <!-- Barre de recherche pour le Desktop , elle est cachée quand je suis coté admin -->
-        <div v-if="!authStore.user.is_admin" class="search-container desktop-only">
+        <div v-if="authStore.user.role !== 'admin'" class="search-container desktop-only">
           <div class="search-input-wrapper">
             <span class="material-symbols-rounded search-icon">search</span>
             <input 
@@ -55,7 +55,7 @@
         </div>
 
         <!-- Mobile Search Toggle -->
-        <div v-if="!authStore.user.is_admin" class="notif-btn mobile-only" @click="showMobileSearch = true">
+        <div v-if="authStore.user.role !== 'admin'" class="notif-btn mobile-only" @click="showMobileSearch = true">
           <span class="material-symbols-rounded">search</span>
         </div>
 
@@ -153,7 +153,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Admin Options -->
-                <template v-if="authStore.user.is_admin">
+                <template v-if="authStore.user.role === 'admin'">
                   <div v-if="route.name !== 'admin-dashboard'" class="dropdown-item" @click="navigateTo('/admin/dashboard')">
                     <div class="item-icon-bg">
                       <span class="material-symbols-rounded">dashboard</span>
@@ -269,7 +269,7 @@ const userSlug = computed(() => {
 const displayName = computed(() => {
   const user = authStore.user?.data || authStore.user;
   const name = user?.nom || 'User';
-  return user?.is_admin && name.length > 5 ? name.substring(0, 5) : name;
+  return user?.role === 'admin' && name.length > 5 ? name.substring(0, 5) : name;
 });
 
 const profileImageUrl = computed(() => {
@@ -362,7 +362,11 @@ const toggleUserMenu = () => {
 };
 
 const  goHome = () => {
-    router.push({ name: 'home', params: { nom_user: userSlug.value || 'user' } });
+    if (authStore.user?.role === 'admin') {
+        router.push('/admin/dashboard');
+    } else {
+        router.push({ name: 'home', params: { nom_user: userSlug.value || 'user' } });
+    }
     showUserMenu.value = false;
 };
 

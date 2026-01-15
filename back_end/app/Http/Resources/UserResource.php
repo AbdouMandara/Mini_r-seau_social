@@ -21,13 +21,16 @@ class UserResource extends JsonResource
             'photo_profil' => $this->photo_profil,
             'bio' => $this->bio,
             'current_title' => $this->current_title,
-            //  SÉCURITÉ : On ne retourne plus de booléen explicite 'is_admin'.
-            // On retourne un rôle, ce qui est une meilleure pratique d'API.
+            'is_blocked' => (bool) $this->is_blocked,
+            'is_certified' => (bool) $this->is_certified,
             'role' => $this->is_admin ? 'admin' : 'user', 
-            // 'is_certified' est conservé si c'est purement cosmétique pour le front (badge de certification)
-            // S'il s'agit d'un flag de sécurité, il devrait être retiré.
-            'is_certified' => $this->is_certified,
+            'posts_count' => $this->posts_count ?? 0,
+            'followers_count' => $this->followers_count ?? 0,
+            'following_count' => $this->following_count ?? 0,
+            'likes_count' => $this->likes_count ?? 0,
+            'comments_count' => $this->comments_count ?? 0,
             'badges' => BadgeResource::collection($this->whenLoaded('badges')),
+            'created_at' => $this->created_at,
         ];
     }
 }

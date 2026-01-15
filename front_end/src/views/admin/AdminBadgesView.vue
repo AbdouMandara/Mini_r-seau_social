@@ -22,7 +22,7 @@
     </div>
 
     <div v-else class="badges-grid">
-      <div v-for="badge in badges" :key="badge.id_badge" class="badge-card" :style="{ borderLeftColor: badge.color }">
+      <div v-for="badge in badges" :key="badge.id" class="badge-card" :style="{ borderLeftColor: badge.color }">
         <div class="card-header">
           <div class="badge-info-row">
             <div class="badge-icon-wrapper" :style="{ backgroundColor: badge.color + '15', color: badge.color }">
@@ -165,7 +165,7 @@ const suggestedIcons = [
 ];
 
 const form = ref({
-    id_badge: null,
+    id: null,
     name: '',
     description: '',
     icon: 'star',
@@ -176,7 +176,7 @@ const form = ref({
 
 const resetForm = () => {
     form.value = {
-        id_badge: null,
+        id: null,
         name: '',
         description: '',
         icon: 'star',
@@ -190,7 +190,7 @@ const fetchBadges = async () => {
     loading.value = true;
     try {
         const res = await api.get('/admin/badges');
-        badges.value = res.data;
+        badges.value = res.data.data;
     } catch (err) {
         console.error(err);
         Swal.fire('Erreur', 'Impossible de charger les badges', 'error');
@@ -219,7 +219,7 @@ const saveBadge = async () => {
     submitting.value = true;
     try {
         if (isEditing.value) {
-            await api.put(`/admin/badges/${form.value.id_badge}`, form.value);
+            await api.put(`/admin/badges/${form.value.id}`, form.value);
             Swal.fire({
                 toast: true,
                 position: 'top-end',
@@ -263,7 +263,7 @@ const deleteBadge = async (badge) => {
 
     if (result.isConfirmed) {
         try {
-            await api.delete(`/admin/badges/${badge.id_badge}`);
+            await api.delete(`/admin/badges/${badge.id}`);
             Swal.fire({
                 toast: true,
                 position: 'top-end',

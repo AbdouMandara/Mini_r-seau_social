@@ -80,7 +80,7 @@ const fetchReports = async () => {
     loading.value = true;
     try {
         const res = await api.get('/admin/reports');
-        reports.value = res.data;
+        reports.value = res.data.data;
     } catch (err) {
         console.error(err);
     } finally {

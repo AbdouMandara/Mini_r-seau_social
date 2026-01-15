@@ -169,7 +169,7 @@ const toggleBlock = async (user) => {
                 admin_password: password 
             });
             
-            user.is_blocked = res.data.is_blocked;
+            user.is_blocked = res.data.user.is_blocked;
             Swal.fire({
                 title: 'Succès',
                 text: res.data.message,

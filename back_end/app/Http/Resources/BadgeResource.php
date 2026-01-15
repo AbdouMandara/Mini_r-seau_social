@@ -15,11 +15,13 @@ class BadgeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->id_badge,
             'name' => $this->name,
             'description' => $this->description,
             'icon' => $this->icon,
-            'criteria' => $this->criteria,
+            'color' => $this->color,
+            'criteria_type' => $this->criteria_type,
+            'criteria_value' => $this->criteria_value,
             'created_at' => $this->created_at,
         ];
     }

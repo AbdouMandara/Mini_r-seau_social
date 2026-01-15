@@ -74,7 +74,7 @@ const fetchFeedbacks = async () => {
     loading.value = true;
     try {
         const res = await api.get('/admin/feedbacks');
-        feedbacks.value = res.data;
+        feedbacks.value = res.data.data || res.data;
     } catch (err) {
         console.error(err);
     } finally {
