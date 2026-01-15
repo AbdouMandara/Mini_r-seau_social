@@ -329,7 +329,7 @@ const openUserList = async (type) => {
     try {
         const endpoint = type === 'followers' ? `/users/${user.value.id}/followers` : `/users/${user.value.id}/following`;
         const res = await api.get(endpoint);
-        userList.value = res.data;
+        userList.value = res.data.data;
     } catch (err) {
         console.error('Fetch user list error', err);
         Swal.fire('Erreur', 'Impossible de charger la liste', 'error');
@@ -368,8 +368,8 @@ const toggleFollowUserInList = async (u) => {
         if (isMyProfile.value) {
             // Refresh profile counts
              const res = await api.get(`/users/profile/${user.value.nom}`);
-             user.value.following_count = res.data.following_count;
-             user.value.followers_count = res.data.followers_count; // In case of follow back
+             user.value.following_count = res.data.data.following_count;
+             user.value.followers_count = res.data.data.followers_count; // In case of follow back
         }
 
     } catch (err) {
@@ -434,16 +434,16 @@ const toggleFollow = async (event) => {
     try {
         if (isFollowing.value) {
             const res = await api.delete(`/users/${user.value.id}/unfollow`);
-            user.value.followers_count = res.data.follower_count;
-            user.value.following_count = res.data.following_count;
+            user.value.followers_count = res.data.data.follower_count;
+            user.value.following_count = res.data.data.following_count;
             isFollowing.value = false;
         } else {
             // Optimistic animation start
             triggerStarRain(event.target);
             
             const res = await api.post(`/users/${user.value.id}/follow`);
-            user.value.followers_count = res.data.follower_count;
-            user.value.following_count = res.data.following_count;
+            user.value.followers_count = res.data.data.follower_count;
+            user.value.following_count = res.data.data.following_count;
             isFollowing.value = true;
         }
     } catch (err) {

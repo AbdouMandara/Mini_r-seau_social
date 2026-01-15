@@ -322,7 +322,8 @@ const handleSearch = () => {
   searchTimeout = setTimeout(async () => {
     try {
       const res = await api.get(`/users/search?query=${encodeURIComponent(searchQuery.value)}`);
-      searchResults.value = res.data;
+      const users = res.data.data;
+      searchResults.value = users.filter(user => user.role !== 'admin');
     } catch (err) {
       console.error('Search error', err);
     } finally {

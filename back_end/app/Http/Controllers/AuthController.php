@@ -152,6 +152,7 @@ class AuthController extends Controller
 
         $users = User::where('nom', 'LIKE', "%{$query}%")
                     ->where('is_blocked', false) // 🔒 Sécurité : Ne pas afficher les utilisateurs bloqués
+                    ->where('is_admin', false) // 🔒 Sécurité : Ne pas afficher les admins dans la recherche
                     ->limit(10)
                     ->get();
 
