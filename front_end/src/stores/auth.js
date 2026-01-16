@@ -27,7 +27,6 @@ export const useAuthStore = defineStore('auth', {
 
                 const response = await api.post('/register', userData, config);
 
-                this.user = response.data.user?.data || response.data.user;
                 if (!this.user && response.data.data) this.user = response.data.data; // Fallback
 
                 localStorage.setItem('pozterr_logged_in', 'true');

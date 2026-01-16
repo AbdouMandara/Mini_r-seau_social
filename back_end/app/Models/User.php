@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -31,7 +30,6 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'is_blocked',
-        'last_seen_at',
         'current_title',
         'is_certified',
     ];
@@ -59,7 +57,6 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'is_blocked' => 'boolean',
-            'last_seen_at' => 'datetime',
             'current_title' => 'string', // Added current_title cast
             'is_certified' => 'boolean',
         ];

@@ -15,15 +15,15 @@ use Illuminate\Support\Facades\Log;
 Log::info('API routes file loaded');
 \Illuminate\Support\Facades\Log::info('Request path: ' . request()->path());
 
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1'); // Limit registration
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1'); // Limit login attempts
+Route::post('/register', [AuthController::class, 'register']); // Limit registration
+Route::post('/login', [AuthController::class, 'login']); // Limit login attempts
 
+Route::middleware('auth:sanctum')->group(function () {
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/tags', [PostController::class, 'getTags']);
 Route::get('/users/{userId}/posts', [PostController::class, 'userPosts']);
 
-Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'profile']);
     Route::get('/users/profile/{nom}', [AuthController::class, 'getUserByNom']);
