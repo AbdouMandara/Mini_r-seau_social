@@ -30,6 +30,7 @@ class UserResource extends JsonResource
             'likes_count' => $this->likes_count ?? 0,
             'comments_count' => $this->comments_count ?? 0,
             'badges' => BadgeResource::collection($this->whenLoaded('badges')),
+            'is_following' => $this->is_following ?? false,
             'created_at' => $this->created_at,
         ];
     }
