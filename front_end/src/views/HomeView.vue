@@ -151,11 +151,17 @@ const fetchPosts = async (append = false) => {
   } finally {
     loading.value = false;
     loadingMore.value = false;
+    
+    // Setup observer after first load (when DOM is ready)
+    if (!append) {
+      setupObserver();
+    }
   }
 };
 
 const handleInfiniteScroll = (entries) => {
     const target = entries[0];
+    
     if (target.isIntersecting && hasMore.value && !loadingMore.value && !loading.value) {
         page.value++;
         fetchPosts(true);
@@ -163,6 +169,22 @@ const handleInfiniteScroll = (entries) => {
 };
 
 let observer = null;
+
+const setupObserver = () => {
+    if (observer) return; // Already set up
+    
+    import('vue').then(({ nextTick }) => {
+        nextTick(() => {
+            if (scrollTrigger.value) {
+                observer = new IntersectionObserver(handleInfiniteScroll, {
+                    rootMargin: '100px',
+                    threshold: 0.1
+                });
+                observer.observe(scrollTrigger.value);
+            }
+        });
+    });
+};
 
 const handleResize = () => {
     isDesktop.value = window.innerWidth >= 768;
@@ -175,15 +197,6 @@ onMounted(() => {
     }
     fetchPosts();
     window.addEventListener('resize', handleResize);
-
-    // Setup intersection observer
-    observer = new IntersectionObserver(handleInfiniteScroll, {
-        rootMargin: '100px',
-        threshold: 0.1
-    });
-    if (scrollTrigger.value) {
-        observer.observe(scrollTrigger.value);
-    }
 });
 
 // Watch for query changes (when clicking a tag from another page or same page)

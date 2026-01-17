@@ -126,9 +126,14 @@
                 v-for="post in posts" 
                 :key="post.id_post" 
                 :post="post" 
-                @refresh="fetchUserPosts"
+                @refresh="() => fetchUserPosts(true)"
                 @open-comments="openComments"
               />
+            </div>
+            <!-- Infinite Scroll Loader -->
+            <div v-if="fetchingPosts" class="mini-loader central-loader" style="margin: 20px auto;"></div>
+            <div v-if="!hasMorePosts && posts.length > 0" style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.9rem;">
+                Vous avez tout vu ! 🎉
             </div>
           </div>
 
@@ -174,7 +179,7 @@
       :is-open="isDrawerOpen" 
       :post-id="activePostId" 
       @close="isDrawerOpen = false"
-      @comment-added="fetchUserPosts"
+      @comment-added="() => fetchUserPosts(true)"
     />
 
     <!-- User List Modal (Followers/Following) -->
@@ -400,8 +405,21 @@ const handleAvatarError = (e) => {
   e.target.src = 'https://ui-avatars.com/api/?name=' + (user.value?.nom || 'User');
 };
 
-const fetchUserPosts = async () => {
-    loading.value = true;
+const page = ref(1);
+const hasMorePosts = ref(true);
+const fetchingPosts = ref(false); // Distinct from global loading to show/hide bottom loader
+
+const fetchUserPosts = async (reset = false) => {
+    if (reset) {
+        page.value = 1;
+        hasMorePosts.value = true;
+        posts.value = [];
+        loading.value = true;
+    } else {
+        if (!hasMorePosts.value || fetchingPosts.value) return;
+        fetchingPosts.value = true;
+    }
+
     try {
         const username = route.params.target_name || authStore.user?.nom;
         
@@ -411,20 +429,54 @@ const fetchUserPosts = async () => {
             return;
         }
 
-        const userRes = await api.get(`/users/profile/${username}`);
-        user.value = userRes.data.data || userRes.data;
-        isFollowing.value = user.value.is_following;
+        // Only fetch user profile data if we are resetting (first load) or if user data is missing
+        if (reset || !user.value) {
+             const userRes = await api.get(`/users/profile/${username}`);
+             user.value = userRes.data.data || userRes.data;
+             isFollowing.value = user.value.is_following;
+        }
 
-        const postsRes = await api.get(`/users/${user.value.id}/posts`);
-        posts.value = postsRes.data.data || postsRes.data;
+        // Fetch posts with pagination
+        const postsRes = await api.get(`/users/${user.value.id}/posts?page=${page.value}`);
+        const newPosts = postsRes.data.data || postsRes.data;
+
+        if (reset) {
+            posts.value = newPosts;
+        } else {
+            posts.value = [...posts.value, ...newPosts];
+        }
+
+        // Check if we have more pages
+        if (newPosts.length < 10) {
+            hasMorePosts.value = false;
+        } else {
+            page.value++;
+        }
+
     } catch (err) {
         console.error('Fetch profile posts error', err);
-        if (err.response?.status === 404) {
+        if (err.response?.status === 404 && reset) {
             Swal.fire('Erreur', 'Utilisateur non trouvé', 'error');
             router.push(`/${authStore.user?.nom}/home`);
         }
     } finally {
         loading.value = false;
+        fetchingPosts.value = false;
+    }
+};
+
+const handleScroll = () => {
+    if (activeTab.value !== 'posts') return;
+    
+    const scrollY = window.scrollY;
+    const bodyHeight = document.documentElement.scrollHeight;
+    const innerHeight = window.innerHeight;
+    const distanceToBottom = bodyHeight - (scrollY + innerHeight);
+
+    if (distanceToBottom < 200) {
+        if (hasMorePosts.value && !fetchingPosts.value) {
+            fetchUserPosts(false);
+        }
     }
 };
 
@@ -630,14 +682,20 @@ onMounted(async () => {
         if (!authStore.user) {
             await authStore.fetchProfile();
         }
-        await fetchUserPosts();
+        await fetchUserPosts(true); // Initial load with reset
+        window.addEventListener('scroll', handleScroll);
     } catch (err) {
         console.error('Profile onMounted error', err);
         loading.value = false;
     }
 });
 
-watch(() => route.params.target_name, fetchUserPosts);
+import { onUnmounted } from 'vue';
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+});
+
+watch(() => route.params.target_name, () => fetchUserPosts(true));
 watch(activeTab, (newTab) => {
   if (newTab === 'interactions') fetchInteractions();
 });
