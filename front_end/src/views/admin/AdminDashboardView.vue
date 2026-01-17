@@ -4,9 +4,7 @@
     <aside class="dashboard-sidebar">
       <!-- Header Removed as requested -->
 
-      <div v-if="loading" class="loader-container">
-        <div class="spinner"></div>
-      </div>
+      <AppLoader v-if="loading" />
 
       <div v-else class="stats-column">
         <div class="stat-card">
@@ -73,6 +71,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import api from '@/utils/api';
 import AdminUsersView from './AdminUsersView.vue';
+import AppLoader from '@/components/Loader.vue';
 
 const stats = ref({
     total_users: 0,
@@ -205,12 +204,6 @@ onUnmounted(() => {
 .dashboard-main {
     flex-grow: 1;
     min-width: 0; /* Prevents overflow issues */
-}
-
-.loader-container {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
 }
 
 /* Responsive */

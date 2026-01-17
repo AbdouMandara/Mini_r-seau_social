@@ -21,9 +21,7 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loader-container">
-        <div class="spinner"></div>
-    </div>
+    <AppLoader v-if="loading" />
 
     <div v-else-if="filteredActivities.length === 0" class="empty-state">
         <span class="material-symbols-rounded empty-icon">history</span>
@@ -59,6 +57,7 @@ import { ref, computed, onMounted } from 'vue';
 import api, { BASE_URL } from '@/utils/api';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import AppLoader from '@/components/Loader.vue';
 
 const activities = ref([]);
 const loading = ref(true);
@@ -330,22 +329,4 @@ onMounted(fetchActivities);
     color: #d1d5db;
 }
 
-.loader-container {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border-color);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
 </style>

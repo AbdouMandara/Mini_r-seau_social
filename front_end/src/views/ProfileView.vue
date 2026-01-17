@@ -717,13 +717,6 @@ watch([isEditModalOpen, showUserListModal], ([editOpen, listOpen]) => {
   min-height: 100vh;
 }
 
-.loader-wrapper {
-  height: 60vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
 }

@@ -389,19 +389,6 @@ const handleRegister = async () => {
     font-weight: 700;
 }
 
-.mini-loader {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
 .fade-enter-active, .fade-leave-active {
     transition: opacity 0.3s, transform 0.3s;
 }

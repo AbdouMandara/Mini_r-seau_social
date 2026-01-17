@@ -375,10 +375,4 @@ onMounted(fetchFeedbacks);
     margin-bottom: 10px;
     color: #d1d5db;
 }
-
-.loader-container {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-}
 </style>

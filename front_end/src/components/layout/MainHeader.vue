@@ -492,13 +492,6 @@ const navigateTo = (path) => {
   color: var(--text-color);
 }
 
-.loader-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
 .search-results-overlay {
   position: absolute;
   top: 100%;
