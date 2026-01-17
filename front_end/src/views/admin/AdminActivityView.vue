@@ -32,7 +32,7 @@
       <div v-for="activity in filteredActivities" :key="activity.id_activity" class="activity-card" :class="activity.action">
         <div class="card-header">
             <div class="user-row">
-                <img :src="getAvatar(activity.user)" class="avatar-sm" />
+                <img :src="getAvatar(activity.user)" :alt="`Photo de profil de ${activity.user?.nom || 'Utilisateur'}`" class="avatar-sm" />
                 <div class="user-meta">
                     <span class="user-name">{{ activity.user?.nom || 'Utilisateur' }}</span>
                     <span class="activity-date">{{ formatDate(activity.created_at) }}</span>

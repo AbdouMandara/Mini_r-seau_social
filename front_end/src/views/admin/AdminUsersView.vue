@@ -43,7 +43,7 @@
             <td>
               <div class="user-cell">
                 <div class="user-info-group">
-                    <img :src="getAvatar(user)" class="avatar-sm" />
+                    <img :src="getAvatar(user)" :alt="`Photo de profil de ${user.nom}`" class="avatar-sm" />
                     <div class="user-info">
                     <span class="name">{{ user.nom }}</span>
                     </div>

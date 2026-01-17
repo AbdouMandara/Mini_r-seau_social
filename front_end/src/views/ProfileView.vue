@@ -10,7 +10,7 @@
         <div class="header-main-content">
           <div class="avatar-container">
             <div class="avatar-ring">
-              <img :src="profileImageUrl" class="profile-avatar-large" @error="handleAvatarError" />
+              <img :src="profileImageUrl" :alt="`Photo de profil de ${user?.nom || 'utilisateur'}`" class="profile-avatar-large" @error="handleAvatarError" />
             </div>
           </div>
           
@@ -162,7 +162,7 @@
                   <p v-if="item.type === 'comment'" class="comment-preview">"{{ item.contenu }}"</p>
                   
                   <div class="post-preview-card" v-if="item.post" @click="goToPost(item.post)">
-                    <img v-if="item.post.img_post" :src="formatPostImg(item.post.img_post)" class="preview-img" />
+                    <img v-if="item.post.img_post" :src="formatPostImg(item.post.img_post)" alt="Image du post" class="preview-img" />
                     <p class="preview-text">{{ truncate(item.post.description, 60) }}</p>
                   </div>
                   <span class="node-time">{{ formatTime(item.created_at) }}</span>
@@ -204,7 +204,7 @@
              <div v-else class="user-list-items">
                 <div v-for="u in userList" :key="u.id" class="user-list-item">
                    <div class="user-info-group" @click="navigateToUser(u)">
-                      <img :src="u.photo_profil ? (u.photo_profil.startsWith('http') ? u.photo_profil : `${BASE_URL}/storage/${u.photo_profil}`) : 'https://ui-avatars.com/api/?name=' + u.nom" class="user-list-avatar" />
+                      <img :src="u.photo_profil ? (u.photo_profil.startsWith('http') ? u.photo_profil : `${BASE_URL}/storage/${u.photo_profil}`) : 'https://ui-avatars.com/api/?name=' + u.nom" :alt="`Photo de profil de ${u.nom}`" class="user-list-avatar" />
                       <div class="user-text-content">
                         <span class="user-list-name">{{ u.nom }}</span>
                         <span class="user-list-handle">@{{ (u.slug || u.nom).toLowerCase().replace(/ /g, '_') }}</span>
@@ -240,7 +240,7 @@
           <form @submit.prevent="handleEditProfile" class="modern-form">
             <div class="photo-edit-section" @click="$refs.profileFileInput.click()">
               <div class="edit-avatar-wrapper">
-                <img :src="editPreviewUrl || profileImageUrl" class="edit-avatar-preview" />
+                <img :src="editPreviewUrl || profileImageUrl" alt="Aperçu de la photo de profil" class="edit-avatar-preview" />
                 <div class="camera-overlay">
                   <span class="material-symbols-rounded">photo_camera</span>
                 </div>

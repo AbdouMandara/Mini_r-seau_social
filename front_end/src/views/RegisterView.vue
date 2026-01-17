@@ -56,7 +56,7 @@
               <span>Choisir une photo de profil (Facultatif)</span>
             </div>
             <div v-else class="preview-container">
-                <img :src="previewUrl" class="upload-preview" />
+                <img :src="previewUrl" alt="Aperçu de la photo de profil" class="upload-preview" />
                 <div class="change-overlay">Changer</div>
             </div>
           </div>

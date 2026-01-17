@@ -19,7 +19,7 @@
               <span class="camera-icon">🖼️</span>
               <span>Ajouter une image</span>
             </div>
-            <img v-else :src="previewUrl" class="upload-preview" />
+            <img v-else :src="previewUrl" alt="Aperçu de l'image du post" class="upload-preview" />
           </div>
           <input 
             ref="fileInput"

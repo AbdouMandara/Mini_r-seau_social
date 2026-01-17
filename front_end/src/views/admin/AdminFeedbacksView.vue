@@ -32,7 +32,7 @@
       <div v-for="feedback in sortedFeedbacks" :key="feedback.id" class="feedback-card">
         <div class="card-header">
             <div class="user-row">
-                <img :src="getAvatar(feedback.user)" class="avatar-sm" />
+                <img :src="getAvatar(feedback.user)" :alt="`Photo de profil de ${feedback.user.nom}`" class="avatar-sm" />
                 <div class="user-meta">
                     <span class="user-name">{{ feedback.user.nom }}</span>
                     <span class="feedback-date">Envoyé le {{ formatDate(feedback.created_at) }}</span>

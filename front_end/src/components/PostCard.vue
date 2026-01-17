@@ -2,7 +2,7 @@
   <div class="post-card card" @mouseenter="showCounts = true" @mouseleave="showCounts = false">
     <!-- Header -->
     <div class="post-header">
-      <img :src="userAvatar" class="post-avatar" @error="handleAvatarError" />
+      <img :src="userAvatar" :alt="`Photo de profil de ${post.user?.nom || 'utilisateur'}`" class="post-avatar" @error="handleAvatarError" />
       <div class="user-info">
         <div class="name-with-badges">
           <h3 class="author-name" @click="goToProfile">{{ authorNom }}</h3>
@@ -40,7 +40,7 @@
       </div>
       
       <div v-if="post.img_post" class="post-image-container">
-        <img :src="postImageUrl" class="post-image" />
+        <img :src="postImageUrl" :alt="`Image du post de ${post.user?.nom || 'utilisateur'}`" class="post-image" />
       </div>
       <p class="post-description" v-html="formattedDescription"></p>
     </div>

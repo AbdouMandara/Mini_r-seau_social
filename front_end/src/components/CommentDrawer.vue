@@ -18,7 +18,7 @@
           </div>
           
           <div v-for="comment in comments" :key="comment.id_commentaire" class="comment-item">
-            <img :src="getAvatar(comment.user)" class="comment-avatar" />
+            <img :src="getAvatar(comment.user)" :alt="`Photo de profil de ${comment.user?.nom || 'utilisateur'}`" class="comment-avatar" />
             <div class="comment-text">
               <span class="comment-user">{{ comment.user?.nom }}</span>
               <p class="comment-content" v-html="formatMentions(comment.contenu)"></p>
@@ -38,7 +38,7 @@
             class="suggestion-item"
             @click="insertMention(user)"
           >
-            <img :src="getAvatar(user)" class="suggestion-avatar" />
+            <img :src="getAvatar(user)" :alt="`Photo de profil de ${user.nom}`" class="suggestion-avatar" />
             <span class="suggestion-name">{{ user.nom }}</span>
           </div>
         </div>

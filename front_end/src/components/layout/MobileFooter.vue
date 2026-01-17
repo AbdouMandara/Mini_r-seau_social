@@ -11,7 +11,7 @@
       </router-link>
       <router-link :to="`/${userSlug}/profil`" class="footer-item">
         <div class="mini-avatar-container">
-          <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
+          <img :src="profileImageUrl" :alt="`Photo de profil de ${authStore.user?.nom || 'utilisateur'}`" class="mini-avatar" @error="handleImgError" />
         </div>
       </router-link>
     </div>

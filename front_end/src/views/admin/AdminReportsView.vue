@@ -33,7 +33,7 @@
       <div v-for="report in filteredReports" :key="report.id" class="report-card" :class="report.status">
         <div class="card-header">
             <div class="user-row">
-                <img :src="getAvatar(report.reporter)" class="avatar-sm" />
+                <img :src="getAvatar(report.reporter)" :alt="`Photo de profil de ${report.reporter?.nom || 'utilisateur'}`" class="avatar-sm" />
                 <div class="user-meta">
                     <span class="user-name">{{ report.reporter?.nom || 'Utilisateur inconnu' }}</span>
                     <span class="report-date">{{ formatDate(report.created_at) }}</span>

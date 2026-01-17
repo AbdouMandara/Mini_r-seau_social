@@ -46,7 +46,7 @@
                   class="search-result-item" 
                   @click="navigateToUserProfile(user)"
                 >
-                  <img :src="getUserAvatar(user)" class="search-avatar" />
+                  <img :src="getUserAvatar(user)" :alt="`Photo de profil de ${user.nom}`" class="search-avatar" />
                   <span class="search-username">{{ user.nom }}</span>
                 </div>
               </div>
@@ -115,7 +115,7 @@
                   class="search-result-item" 
                   @click="navigateToUserProfile(user)"
                 >
-                  <img :src="getUserAvatar(user)" class="search-avatar" />
+                  <img :src="getUserAvatar(user)" :alt="`Photo de profil de ${user.nom}`" class="search-avatar" />
                   <div class="search-info">
                     <span class="search-username">{{ user.nom }}</span>
                     <span class="search-email">@{{ (user.slug || user.nom || '').toLowerCase().replace(/ /g, '_') }}</span>
@@ -131,7 +131,7 @@
           <div class="user-menu-wrapper" v-if="authStore.isAuthenticated">
             <div class="profile-link-container" @click="toggleUserMenu" :class="{ 'active': showUserMenu }">
               <div class="avatar-with-name">
-                <img :src="profileImageUrl" class="mini-avatar" @error="handleImgError" />
+                <img :src="profileImageUrl" :alt="`Photo de profil de ${authStore.user?.nom || 'utilisateur'}`" class="mini-avatar" @error="handleImgError" />
                 <span class="user-name-header">{{ displayName }}</span>
                 <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
               </div>
@@ -140,7 +140,7 @@
             <Transition name="fade-slide">
               <div v-if="showUserMenu" class="user-dropdown card shadow-lg">
                 <div class="dropdown-user-info">
-                  <img :src="profileImageUrl" class="dropdown-avatar" @error="handleImgError" />
+                  <img :src="profileImageUrl" :alt="`Photo de profil de ${authStore.user?.nom || 'utilisateur'}`" class="dropdown-avatar" @error="handleImgError" />
                   <div class="user-details">
                     <span class="full-name" @click="goToProfile">{{ displayName }}</span>
                     <span class="view-profile">Bienvenue 😊</span>

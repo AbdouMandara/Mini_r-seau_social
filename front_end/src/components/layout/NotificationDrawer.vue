@@ -14,7 +14,7 @@
               <p>Aucune notification</p>
             </div>
             <div v-for="n in notifications" :key="n.id_notif" class="notif-item" :class="{ 'unread': !n.is_read }">
-              <img :src="getAuthorAvatar(n.author)" class="notif-avatar" />
+              <img :src="getAuthorAvatar(n.author)" :alt="`Photo de profil de ${n.author?.nom || 'utilisateur'}`" class="notif-avatar" />
               <div class="notif-content">
                 <p v-if="n.type === 'follow'"><strong>{{ n.author?.nom }}</strong> a commencé à vous suivre</p>
                 <p v-else-if="n.type === 'follow_back'"><strong>{{ n.author?.nom }}</strong> vous a suivi en retour</p>
